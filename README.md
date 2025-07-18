@@ -30,7 +30,7 @@ A modern React TypeScript application for capturing and preserving school memori
 
 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/reminisce-frontend.git
+git clone https://github.com/De-Silicon-Valley/reminisce-frontend.git
 cd reminisce-frontend
 ```
 
