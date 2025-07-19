@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Heart, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer: React.FC = () => {
@@ -37,18 +38,18 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-inter font-semibold mb-4">Quick Links</h3>
             <div className="space-y-2 text-sm font-inter font-medium">
-              <a href="/home" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
+              <Link href="/home" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
                 Home
-              </a>
-              <a href="/photos" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
+              </Link>
+              <Link href="/photos" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
                 Gallery
-              </a>
-              <a href="/events" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
+              </Link>
+              <Link href="/events" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
                 Events
-              </a>
-              <a href="/admin" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
+              </Link>
+              <Link href="/admin" className="block text-white hover:text-reminisce-purple transition-colors duration-200">
                 Admin
-              </a>
+              </Link>
             </div>
           </div>
         </div>

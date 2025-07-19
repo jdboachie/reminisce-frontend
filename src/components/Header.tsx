@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Home, Image, Calendar, Users, Building, BarChart3, User, ChevronDown } from 'lucide-react';
 
 interface NavItem {
@@ -33,14 +36,14 @@ const Header: React.FC = () => {
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
-                <a
+                <Link
                   key={item.name}
                   href={item.path}
                   className="flex items-center text-reminisce-black hover:text-reminisce-brand px-3 py-2 rounded-md text-sm font-inter font-medium transition-colors duration-200"
                 >
                   <Icon className="h-4 w-4 mr-2" />
                   {item.name}
-                </a>
+                </Link>
               );
             })}
           </nav>
@@ -60,24 +63,24 @@ const Header: React.FC = () => {
               {/* Dropdown Menu */}
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-reminisce-light-gray">
-                  <a
+                  <Link
                     href="/profile"
                     className="block px-4 py-2 text-sm text-reminisce-black hover:bg-reminisce-purple hover:text-white font-inter font-medium"
                   >
                     My Profile
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/settings"
                     className="block px-4 py-2 text-sm text-reminisce-black hover:bg-reminisce-purple hover:text-white font-inter font-medium"
                   >
                     Settings
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/logout"
                     className="block px-4 py-2 text-sm text-reminisce-black hover:bg-reminisce-purple hover:text-white font-inter font-medium"
                   >
                     Logout
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
