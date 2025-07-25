@@ -1,18 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 51, 51, 51;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 248, 250, 252;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background-start-rgb: 15, 23, 42;
+    --background-end-rgb: 30, 41, 59;
   }
 }
 
@@ -24,4 +26,82 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Custom animations for the memory-driven experience */
+@keyframes gentle-fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes soft-scale {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes watercolor-float {
+  0%, 100% { 
+    background-position: 0% 50%; 
+    opacity: 0.8;
+  }
+  50% { 
+    background-position: 100% 50%; 
+    opacity: 1;
+  }
+}
+
+.animate-gentle-fade-in { 
+  animation: gentle-fade-in 0.8s ease-out; 
+}
+
+.animate-soft-scale { 
+  animation: soft-scale 0.6s ease-out; 
+}
+
+.animate-gentle-bounce { 
+  animation: gentle-bounce 2s infinite; 
+}
+
+.animate-watercolor-float {
+  background-size: 200% 200%;
+  animation: watercolor-float 8s ease-in-out infinite;
+}
+
+/* Custom utility classes */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.soft-shadow {
+  box-shadow: 0 4px 20px rgba(161, 133, 226, 0.15);
+}
+
+.soft-shadow-hover {
+  box-shadow: 0 8px 30px rgba(161, 133, 226, 0.25);
+}
+
+.memory-gradient {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 50%, #d1d5db 100%);
+}
+
+.purple-gradient {
+  background: linear-gradient(135deg, #a185e2 0%, #8b5cf6 50%, #7c3aed 100%);
+}
+
+.watercolor-bg {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 25%, #e9d5ff 50%, #d8b4fe 75%, #c084fc 100%);
 } 
