@@ -211,7 +211,7 @@ const ProfilesPage: React.FC = () => {
                       <div className="flex items-start space-x-2">
                         <Quote className="h-4 w-4 text-purple-400 mt-0.5 flex-shrink-0" />
                         <p className="text-sm font-poppins text-slate-600 italic">
-                          "{student.quote}"
+                          &ldquo;{student.quote}&rdquo;
                         </p>
                       </div>
                     </div>
@@ -290,7 +290,7 @@ const ProfilesPage: React.FC = () => {
                     <div className="text-right">
                       <div className="flex items-center space-x-1 text-sm text-slate-500 font-poppins mb-2">
                         <Quote className="h-4 w-4 text-purple-400" />
-                        <span className="italic">"{student.quote}"</span>
+                        <span className="italic">&ldquo;{student.quote}&rdquo;</span>
                       </div>
                       <div className="flex flex-wrap gap-1 justify-end">
                         {student.achievements.slice(0, 3).map((achievement, idx) => (

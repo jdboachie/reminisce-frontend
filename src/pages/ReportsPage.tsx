@@ -70,7 +70,7 @@ const ReportsPage: React.FC = () => {
               Report & Feedback
             </h1>
             <p className="text-lg font-poppins text-slate-600 max-w-2xl mx-auto">
-              Having a problem or something to share? We're here to listen and help.
+              Having a problem or something to share? We&apos;re here to listen and help.
             </p>
           </div>
 
@@ -84,10 +84,10 @@ const ReportsPage: React.FC = () => {
                   <User className="h-24 w-24 text-purple-500" />
                 </div>
                 <h2 className="text-2xl font-poppins font-semibold text-slate-800 mb-4">
-                  We're Here to Help
+                  We&apos;re Here to Help
                 </h2>
                 <p className="text-lg font-poppins text-slate-600 leading-relaxed">
-                  Whether you've found a bug, have a suggestion for improvement, or just want to share your thoughts, 
+                  Whether you&apos;ve found a bug, have a suggestion for improvement, or just want to share your thoughts, 
                   we value your feedback. Your input helps us make REMINISCE better for everyone.
                 </p>
               </div>
@@ -251,7 +251,7 @@ const ReportsPage: React.FC = () => {
                     Thank You!
                   </h3>
                   <p className="text-slate-600 font-poppins">
-                    Your message has been sent successfully. We'll get back to you soon!
+                    Your message has been sent successfully. We&apos;ll get back to you soon!
                   </p>
                 </div>
               )}

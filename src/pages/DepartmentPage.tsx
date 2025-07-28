@@ -108,7 +108,7 @@ const DepartmentPage: React.FC = () => {
               About Our Department
             </h1>
             <p className="text-lg font-poppins text-slate-600 max-w-3xl mx-auto">
-              Discover our academic community, dedicated faculty, and the journey we've shared together.
+              Discover our academic community, dedicated faculty, and the journey we&apos;ve shared together.
             </p>
           </div>
 
@@ -128,7 +128,7 @@ const DepartmentPage: React.FC = () => {
                   </p>
                   <p className="text-lg font-poppins text-slate-600 leading-relaxed">
                     With state-of-the-art facilities, dedicated faculty, and a curriculum that balances theoretical 
-                    foundations with hands-on experience, we've created an environment where students can thrive 
+                    foundations with hands-on experience, we&apos;ve created an environment where students can thrive 
                     and develop into the next generation of technology leaders.
                   </p>
                 </div>
