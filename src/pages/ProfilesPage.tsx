@@ -3,10 +3,14 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import StudentAuth from '../components/StudentAuth';
+import ProfileUpload from '../components/ProfileUpload';
+import SuccessMessage from '../components/SuccessMessage';
 import { Grid, List, Search, User, Mail, Phone, MapPin, Quote } from 'lucide-react';
 
 interface Student {
   id: string;
+  studentId: string;
   name: string;
   role: string;
   year: string;
@@ -16,12 +20,12 @@ interface Student {
   email: string;
   phone: string;
   location: string;
-  achievements: string[];
 }
 
 const mockStudents: Student[] = [
   {
     id: '1',
+    studentId: 'STU001',
     name: 'Sarah Johnson',
     role: 'Class President',
     year: '2024',
@@ -30,11 +34,11 @@ const mockStudents: Student[] = [
     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
     email: 'sarah.johnson@email.com',
     phone: '+1 (555) 123-4567',
-    location: 'New York, NY',
-    achievements: ['Dean\'s List', 'Research Assistant', 'Student Council']
+    location: 'New York, NY'
   },
   {
     id: '2',
+    studentId: 'STU002',
     name: 'Michael Chen',
     role: 'Vice President',
     year: '2024',
@@ -43,11 +47,11 @@ const mockStudents: Student[] = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     email: 'michael.chen@email.com',
     phone: '+1 (555) 234-5678',
-    location: 'San Francisco, CA',
-    achievements: ['Engineering Excellence Award', 'Robotics Club President']
+    location: 'San Francisco, CA'
   },
   {
     id: '3',
+    studentId: 'STU003',
     name: 'Emily Rodriguez',
     role: 'Secretary',
     year: '2024',
@@ -56,11 +60,11 @@ const mockStudents: Student[] = [
     avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
     email: 'emily.rodriguez@email.com',
     phone: '+1 (555) 345-6789',
-    location: 'Miami, FL',
-    achievements: ['Business Case Competition Winner', 'Entrepreneurship Club']
+    location: 'Miami, FL'
   },
   {
     id: '4',
+    studentId: 'STU004',
     name: 'David Kim',
     role: 'Treasurer',
     year: '2024',
@@ -69,11 +73,11 @@ const mockStudents: Student[] = [
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     email: 'david.kim@email.com',
     phone: '+1 (555) 456-7890',
-    location: 'Seattle, WA',
-    achievements: ['Math Olympiad Champion', 'Teaching Assistant']
+    location: 'Seattle, WA'
   },
   {
     id: '5',
+    studentId: 'STU005',
     name: 'Jessica Williams',
     role: 'Student Representative',
     year: '2024',
@@ -82,11 +86,11 @@ const mockStudents: Student[] = [
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
     email: 'jessica.williams@email.com',
     phone: '+1 (555) 567-8901',
-    location: 'Chicago, IL',
-    achievements: ['Psychology Research Grant', 'Peer Counselor']
+    location: 'Chicago, IL'
   },
   {
     id: '6',
+    studentId: 'STU006',
     name: 'Alex Thompson',
     role: 'Class Representative',
     year: '2024',
@@ -95,8 +99,7 @@ const mockStudents: Student[] = [
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
     email: 'alex.thompson@email.com',
     phone: '+1 (555) 678-9012',
-    location: 'Boston, MA',
-    achievements: ['Biology Research Fellowship', 'Science Club Leader']
+    location: 'Boston, MA'
   }
 ];
 
@@ -104,12 +107,82 @@ const ProfilesPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [currentStudentId, setCurrentStudentId] = useState('');
+  const [students, setStudents] = useState<Student[]>(mockStudents);
 
-  const filteredStudents = mockStudents.filter(student =>
+  const filteredStudents = students.filter(student =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.major.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleStudentAuthenticated = (studentId: string) => {
+    setCurrentStudentId(studentId);
+    setIsAuthenticated(true);
+    setIsUploadingProfile(true);
+  };
+
+  const handleProfileComplete = (profileData: any) => {
+    // In a real app, this would save to backend
+    const newStudent: Student = {
+      id: Date.now().toString(),
+      studentId: currentStudentId,
+      name: profileData.name,
+      email: profileData.email,
+      phone: profileData.phone,
+      location: profileData.location,
+      major: profileData.major,
+      year: profileData.year,
+      role: profileData.role,
+      quote: profileData.quote,
+      avatar: profileData.avatarPreview
+    };
+    
+    setStudents(prev => [...prev, newStudent]);
+    setIsUploadingProfile(false);
+    setShowSuccess(true);
+  };
+
+  const handleContinueToProfiles = () => {
+    setShowSuccess(false);
+    setIsAuthenticated(false);
+    setCurrentStudentId('');
+  };
+
+  const handleBackToAuth = () => {
+    setIsUploadingProfile(false);
+    setIsAuthenticated(false);
+    setCurrentStudentId('');
+  };
+
+  // Show success message if profile was just uploaded
+  if (showSuccess) {
+    return <SuccessMessage onContinue={handleContinueToProfiles} />;
+  }
+
+  // Show profile upload screen if uploading profile
+  if (isUploadingProfile) {
+    return (
+      <ProfileUpload 
+        studentId={currentStudentId}
+        onBack={handleBackToAuth}
+        onComplete={handleProfileComplete}
+        onBackToProfiles={() => {
+          setIsUploadingProfile(false);
+          setIsAuthenticated(false);
+          setCurrentStudentId('');
+        }}
+      />
+    );
+  }
+
+  // Show authentication screen if user wants to add profile
+  if (isAuthenticated) {
+    return <StudentAuth onAuthenticated={handleStudentAuthenticated} onBack={() => setIsAuthenticated(false)} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -122,10 +195,17 @@ const ProfilesPage: React.FC = () => {
             <h1 className="text-4xl font-poppins font-bold text-slate-800 mb-4">
               Meet Our Class
             </h1>
-            <p className="text-lg font-poppins text-slate-600 max-w-2xl mx-auto">
-              Connect with classmates and discover the amazing people in our community. 
-              Every student brings unique talents, dreams, and perspectives to our class.
-            </p>
+                         <p className="text-lg font-poppins text-slate-600 max-w-2xl mx-auto mb-8">
+               Connect with classmates and discover the amazing people in our community. 
+               Every student brings unique talents, dreams, and perspectives to our class.
+             </p>
+             <button
+               onClick={() => setIsAuthenticated(true)}
+               className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-poppins font-medium hover:from-purple-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 flex items-center space-x-2 mx-auto"
+             >
+               <User className="h-5 w-5" />
+               <span>Add Your Profile</span>
+             </button>
           </div>
 
           {/* Controls Section */}
@@ -216,24 +296,7 @@ const ProfilesPage: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Achievements */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-poppins font-medium text-slate-700 uppercase tracking-wide">
-                        Achievements
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {student.achievements.slice(0, 2).map((achievement, idx) => (
-                          <span key={idx} className="bg-purple-50 text-purple-600 px-2 py-1 rounded-full text-xs font-poppins">
-                            {achievement}
-                          </span>
-                        ))}
-                        {student.achievements.length > 2 && (
-                          <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-full text-xs font-poppins">
-                            +{student.achievements.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
+
                   </div>
                 </div>
               ))}
@@ -288,16 +351,9 @@ const ProfilesPage: React.FC = () => {
                     </div>
                     
                     <div className="text-right">
-                      <div className="flex items-center space-x-1 text-sm text-slate-500 font-poppins mb-2">
+                      <div className="flex items-center space-x-1 text-sm text-slate-500 font-poppins">
                         <Quote className="h-4 w-4 text-purple-400" />
                         <span className="italic">&ldquo;{student.quote}&rdquo;</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 justify-end">
-                        {student.achievements.slice(0, 3).map((achievement, idx) => (
-                          <span key={idx} className="bg-purple-50 text-purple-600 px-2 py-1 rounded-full text-xs font-poppins">
-                            {achievement}
-                          </span>
-                        ))}
                       </div>
                     </div>
                   </div>
