@@ -15,7 +15,7 @@ import { Sidebar } from '@/components/SideBar';
 import { Dashboard } from '@/components/DashBoard';
 import { UsersManagement } from '../components/UsersManagement';
 import { EventsManagement } from '../components/EventsManagement';
-import { AlbumsManagement } from '../components/AlbumsManagement';
+import AlbumsManagement from '../components/AlbumsManagement';
 import { DepartmentInfo } from '../components/DepartmentInfo';
 import { Reports } from '../components/Reports';
 import { Notification } from '@/components/ui';

@@ -33,19 +33,19 @@ export interface Album {
   createdAt: string;
 }
 
-// Add the Picture interface
-export interface Pictures {
-  id: string;
-  albumId: string;
-  title: string;
-  description: string;
-  tags: string[];
-  imageUrl: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  likes: number;
-  views: number;
-}
+// // Add the Picture interface
+// export interface Pictures {
+//   id: string;
+//   albumId: string;
+//   title: string;
+//   description: string;
+//   tags: string[];
+//   imageUrl: string;
+//   uploadedBy: string;
+//   uploadedAt: string;
+//   likes: number;
+//   views: number;
+// }
 
 export interface DepartmentInfo {
   name: string;
@@ -101,4 +101,23 @@ export interface ButtonProps {
 export interface NotificationState {
   message: string;
   type: 'success' | 'error';
+}
+
+export interface Album {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface Pictures {
+  id: string;
+  albumId: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  tags?: string[];
+  uploadedBy?: string;
+  uploadedAt?: string;
+  likes?: number;
+  views?: number;
 }
