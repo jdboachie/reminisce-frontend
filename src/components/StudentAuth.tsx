@@ -82,11 +82,7 @@ const StudentAuth: React.FC<StudentAuthProps> = ({ onAuthenticated, onBack }) =>
                          <p className="text-slate-600 dark:text-slate-300 font-poppins">
                Enter your reference number to access your profile
              </p>
-            {API_CONFIG.USE_REAL_BACKEND && (
-              <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-poppins">
-                Connected to real backend
-              </p>
-            )}
+
           </div>
 
           {/* Form */}

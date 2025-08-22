@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Home, Image, Calendar, Users, Building, BarChart3, User, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useAppStateContext, useTheme } from './AppProvider';
 
@@ -16,6 +17,7 @@ const Header: React.FC = () => {
   const { isAuthenticated, setIsAuthenticated, setCurrentStudentId, currentStudentId } = useAppStateContext();
   const { theme, toggleTheme } = useTheme();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   const navItems: NavItem[] = [
     { name: 'Home', icon: Home, path: '/' },
@@ -66,14 +68,26 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
+              const isActive = pathname === item.path;
               return (
                 <Link
                   key={item.name}
                   href={item.path}
-                  className="flex items-center text-reminisce-gray-600 dark:text-slate-300 hover:text-reminisce-purple-600 dark:hover:text-purple-400 hover:bg-reminisce-purple-50 dark:hover:bg-slate-800 px-4 py-2 rounded-xl text-sm font-poppins font-medium transition-all duration-300 group"
+                  className={`flex items-center px-4 py-2 rounded-xl text-sm font-poppins font-medium transition-all duration-300 group relative ${
+                    isActive
+                      ? 'text-reminisce-purple-600 dark:text-purple-400 bg-reminisce-purple-50 dark:bg-slate-800 border-2 border-reminisce-purple-200 dark:border-purple-700'
+                      : 'text-reminisce-gray-600 dark:text-slate-300 hover:text-reminisce-purple-600 dark:hover:text-purple-400 hover:bg-reminisce-purple-50 dark:hover:bg-slate-800'
+                  }`}
                 >
-                  <Icon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                  <Icon className={`h-4 w-4 mr-2 transition-all duration-300 ${
+                    isActive 
+                      ? 'scale-110 text-reminisce-purple-600 dark:text-purple-400' 
+                      : 'group-hover:scale-110'
+                  }`} />
                   {item.name}
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-reminisce-purple-600 dark:bg-purple-400 rounded-full"></div>
+                  )}
                 </Link>
               );
             })}
