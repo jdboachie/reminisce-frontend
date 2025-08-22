@@ -59,17 +59,17 @@ const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
       <main className="flex-grow px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-poppins font-bold text-slate-800 mb-4">
+            <h1 className="text-4xl font-poppins font-bold text-slate-800 dark:text-white mb-4">
               Report & Feedback
             </h1>
-            <p className="text-lg font-poppins text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Having a problem or something to share? We&apos;re here to listen and help.
             </p>
           </div>
@@ -80,21 +80,21 @@ const ReportsPage: React.FC = () => {
             <div className="space-y-8">
               {/* Illustration */}
               <div className="text-center">
-                <div className="w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 soft-shadow">
-                  <User className="h-24 w-24 text-purple-500" />
+                <div className="w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full flex items-center justify-center mx-auto mb-6 soft-shadow">
+                  <User className="h-24 w-24 text-purple-500 dark:text-purple-400" />
                 </div>
-                <h2 className="text-2xl font-poppins font-semibold text-slate-800 mb-4">
+                <h2 className="text-2xl font-poppins font-semibold text-slate-800 dark:text-white mb-4">
                   We&apos;re Here to Help
                 </h2>
-                <p className="text-lg font-poppins text-slate-600 leading-relaxed">
+                <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 leading-relaxed">
                   Whether you&apos;ve found a bug, have a suggestion for improvement, or just want to share your thoughts, 
                   we value your feedback. Your input helps us make REMINISCE better for everyone.
                 </p>
               </div>
 
               {/* Support Info */}
-              <div className="bg-white rounded-2xl p-6 soft-shadow">
-                <h3 className="text-lg font-poppins font-semibold text-slate-800 mb-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 soft-shadow border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-poppins font-semibold text-slate-800 dark:text-white mb-4">
                   What can you report?
                 </h3>
                 <div className="space-y-4">
@@ -106,10 +106,10 @@ const ReportsPage: React.FC = () => {
                           <Icon className="h-4 w-4 text-purple-600" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-poppins font-semibold text-slate-800">
+                          <h4 className="text-sm font-poppins font-semibold text-slate-800 dark:text-white">
                             {category.label}
                           </h4>
-                          <p className="text-sm font-poppins text-slate-600">
+                          <p className="text-sm font-poppins text-slate-600 dark:text-slate-300">
                             {category.description}
                           </p>
                         </div>
@@ -121,10 +121,10 @@ const ReportsPage: React.FC = () => {
             </div>
 
             {/* Right Column - Feedback Form */}
-            <div className="bg-white rounded-2xl p-8 soft-shadow">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 soft-shadow border border-slate-200 dark:border-slate-700">
               {!isSubmitted ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <h3 className="text-2xl font-poppins font-semibold text-slate-800 mb-6">
+                  <h3 className="text-2xl font-poppins font-semibold text-slate-800 dark:text-white mb-6">
                     Send us a message
                   </h3>
 
@@ -135,13 +135,13 @@ const ReportsPage: React.FC = () => {
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
                       placeholder=" "
                       required
                     />
                     <label
                       htmlFor="name"
-                      className="absolute left-4 top-3 text-slate-500 font-poppins text-sm transition-all duration-300 pointer-events-none"
+                      className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
                     >
                       Your Name
                     </label>
@@ -154,13 +154,13 @@ const ReportsPage: React.FC = () => {
                       id="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
                       placeholder=" "
                       required
                     />
                     <label
                       htmlFor="email"
-                      className="absolute left-4 top-3 text-slate-500 font-poppins text-sm transition-all duration-300 pointer-events-none"
+                      className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
                     >
                       Email Address
                     </label>
@@ -172,7 +172,7 @@ const ReportsPage: React.FC = () => {
                       id="category"
                       value={formData.category}
                       onChange={(e) => handleInputChange('category', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 appearance-none bg-white"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 appearance-none bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
                       required
                     >
                       <option value="">Select a category</option>
@@ -191,13 +191,13 @@ const ReportsPage: React.FC = () => {
                       id="subject"
                       value={formData.subject}
                       onChange={(e) => handleInputChange('subject', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
                       placeholder=" "
                       required
                     />
                     <label
                       htmlFor="subject"
-                      className="absolute left-4 top-3 text-slate-500 font-poppins text-sm transition-all duration-300 pointer-events-none"
+                      className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
                     >
                       Subject
                     </label>
@@ -210,13 +210,13 @@ const ReportsPage: React.FC = () => {
                       value={formData.message}
                       onChange={(e) => handleInputChange('message', e.target.value)}
                       rows={5}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 resize-none"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 resize-none bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
                       placeholder=" "
                       required
                     />
                     <label
                       htmlFor="message"
-                      className="absolute left-4 top-3 text-slate-500 font-poppins text-sm transition-all duration-300 pointer-events-none"
+                      className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
                     >
                       Your Message
                     </label>
@@ -244,13 +244,13 @@ const ReportsPage: React.FC = () => {
               ) : (
                 /* Success Message */
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-soft-scale">
-                    <CheckCircle className="h-10 w-10 text-green-600" />
+                  <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-soft-scale">
+                    <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
                   </div>
-                  <h3 className="text-2xl font-poppins font-semibold text-slate-800 mb-4">
+                  <h3 className="text-2xl font-poppins font-semibold text-slate-800 dark:text-white mb-4">
                     Thank You!
                   </h3>
-                  <p className="text-slate-600 font-poppins">
+                  <p className="text-slate-600 dark:text-slate-300 font-poppins">
                     Your message has been sent successfully. We&apos;ll get back to you soon!
                   </p>
                 </div>
@@ -260,20 +260,20 @@ const ReportsPage: React.FC = () => {
 
           {/* Additional Support Info */}
           <div className="mt-16 text-center">
-            <div className="bg-white rounded-2xl p-8 soft-shadow max-w-2xl mx-auto">
-              <h3 className="text-xl font-poppins font-semibold text-slate-800 mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 soft-shadow max-w-2xl mx-auto border border-slate-200 dark:border-slate-700">
+              <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-4">
                 Need immediate help?
               </h3>
-              <p className="text-slate-600 font-poppins mb-6">
+              <p className="text-slate-600 dark:text-slate-300 font-poppins mb-6">
                 For urgent matters, you can also reach us directly:
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <div className="flex items-center space-x-2 text-slate-600 font-poppins">
-                  <Mail className="h-5 w-5 text-purple-500" />
+                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 font-poppins">
+                  <Mail className="h-5 w-5 text-purple-500 dark:text-purple-400" />
                   <span>support@reminisce.com</span>
                 </div>
-                <div className="flex items-center space-x-2 text-slate-600 font-poppins">
-                  <MessageSquare className="h-5 w-5 text-purple-500" />
+                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 font-poppins">
+                  <MessageSquare className="h-5 w-5 text-purple-500 dark:text-purple-400" />
                   <span>Live Chat Available</span>
                 </div>
               </div>

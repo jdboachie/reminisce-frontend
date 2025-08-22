@@ -94,16 +94,10 @@ const mockEvents: Event[] = [
   }
 ];
 
-const categories = ['All', 'Academic', 'Social', 'Sports', 'Professional'];
-
 const EventsPage: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredEvents = mockEvents.filter(event => 
-    selectedCategory === 'All' || event.category === selectedCategory
-  );
+  const filteredEvents = mockEvents;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -124,74 +118,42 @@ const EventsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
       <main className="flex-grow px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-poppins font-bold text-slate-800 mb-4">
-              Our Events & Milestones
+            <h1 className="text-4xl font-poppins font-bold text-slate-800 dark:text-white mb-4">
+              Our Events
             </h1>
-            <p className="text-lg font-poppins text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Relive the key moments and celebrations that made this year special. 
-              Every event tells a story of growth, achievement, and community.
+              From academic achievements to social gatherings, every event tells a story.
             </p>
           </div>
 
           {/* Controls Section */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between">
-            {/* Filter */}
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center space-x-2 px-4 py-3 bg-white border border-slate-200 rounded-xl hover:border-purple-300 transition-all duration-300 font-poppins text-sm"
-              >
-                <Filter className="h-4 w-4 text-slate-600" />
-                <span className="text-slate-700">{selectedCategory}</span>
-              </button>
-              
-              {isFilterOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50 border border-slate-100 soft-shadow animate-soft-scale">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        setIsFilterOpen(false);
-                      }}
-                      className={`block w-full text-left px-4 py-3 text-sm font-poppins transition-all duration-300 ${
-                        selectedCategory === category
-                          ? 'text-purple-600 bg-purple-50'
-                          : 'text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
+          <div className="flex justify-end mb-8">
             {/* View Toggle */}
-            <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-slate-200">
+            <div className="flex items-center space-x-2 bg-white dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-600">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg transition-all duration-300 ${
                   viewMode === 'grid' 
-                    ? 'bg-purple-100 text-purple-600' 
-                    : 'text-slate-600 hover:text-purple-600'
+                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+                    : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
                 }`}
               >
                 <Grid className="h-4 w-4" />
               </button>
               <button
-                onClick={() => setViewMode('timeline')}
+                onClick={() => setViewMode('list')}
                 className={`p-2 rounded-lg transition-all duration-300 ${
-                  viewMode === 'timeline' 
-                    ? 'bg-purple-100 text-purple-600' 
-                    : 'text-slate-600 hover:text-purple-600'
+                  viewMode === 'list' 
+                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+                    : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
                 }`}
               >
                 <List className="h-4 w-4" />
@@ -205,7 +167,7 @@ const EventsPage: React.FC = () => {
               {filteredEvents.map((event, index) => (
                 <div 
                   key={event.id}
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale"
+                  className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale border border-slate-200 dark:border-slate-700"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {/* Event Image */}
@@ -220,22 +182,22 @@ const EventsPage: React.FC = () => {
                       {getStatusText(event.status)}
                     </div>
                     {/* Date Badge */}
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-slate-700 px-3 py-1 rounded-full text-xs font-poppins font-medium">
+                    <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-700 dark:text-slate-300 px-3 py-1 rounded-full text-xs font-poppins font-medium">
                       {event.date}
                     </div>
                   </div>
 
                   {/* Event Info */}
                   <div className="p-6">
-                    <h3 className="text-xl font-poppins font-semibold text-slate-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                    <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
                       {event.title}
                     </h3>
-                    <p className="text-slate-600 text-sm font-poppins mb-4 leading-relaxed">
+                    <p className="text-slate-600 dark:text-slate-300 text-sm font-poppins mb-4 leading-relaxed">
                       {event.description}
                     </p>
                     
                     {/* Event Details */}
-                    <div className="space-y-2 text-sm text-slate-500 font-poppins">
+                    <div className="space-y-2 text-sm text-slate-500 dark:text-slate-400 font-poppins">
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4" />
                         <span>{event.time}</span>
@@ -259,7 +221,7 @@ const EventsPage: React.FC = () => {
               {filteredEvents.map((event, index) => (
                 <div 
                   key={event.id}
-                  className="flex flex-col lg:flex-row bg-white rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale"
+                  className="flex flex-col lg:flex-row bg-white dark:bg-slate-800 rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale border border-slate-200 dark:border-slate-700"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {/* Event Image */}

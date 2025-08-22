@@ -137,6 +137,10 @@ export const useAppState = () => {
   const [albums, setAlbums] = useState<Album[]>(initialAlbums);
   const [pictures, setPictures] = useState<Pictures[]>(initialPictures); // Add pictures state
   const [departmentInfo, setDepartmentInfo] = useState<DepartmentInfo>(initialDepartmentInfo);
+  
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentStudentId, setCurrentStudentId] = useState('');
 
   return {
     activeTab,
@@ -150,6 +154,11 @@ export const useAppState = () => {
     pictures,     // Add pictures to return object
     setPictures,  // Add setPictures to return object
     departmentInfo,
-    setDepartmentInfo
+    setDepartmentInfo,
+    // Authentication state
+    isAuthenticated,
+    setIsAuthenticated,
+    currentStudentId,
+    setCurrentStudentId
   };
 };
