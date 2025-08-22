@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "Reminisce API Collection",
+    "description": "API collection for the Reminisce yearbook application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Student Authentication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"2024001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/student",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "student"]
+            },
+            "description": "Authenticate a student using their student ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Auth API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/student",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "student"]
+            },
+            "description": "Get information about the authentication API"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profiles",
+      "item": [
+        {
+          "name": "Get All Profiles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "profiles"]
+            },
+            "description": "Get all student profiles"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Profiles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/profiles?search=computer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "profiles"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "computer"
+                }
+              ]
+            },
+            "description": "Search profiles by name, major, role, or quote"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profiles with Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/profiles?limit=5&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "profiles"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get profiles with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profiles API Info",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "profiles"]
+            },
+            "description": "Get information about the profiles API"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profile Upload",
+      "item": [
+        {
+          "name": "Upload Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"2024001\",\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@university.edu\",\n  \"phone\": \"+1 (555) 123-4567\",\n  \"location\": \"New York, NY\",\n  \"major\": \"Computer Science\",\n  \"year\": \"2024\",\n  \"role\": \"Student\",\n  \"quote\": \"Learning is a journey, not a destination.\",\n  \"avatar\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/profile/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "profile", "upload"]
+            },
+            "description": "Upload or update a student profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile Upload API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/profile/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "profile", "upload"]
+            },
+            "description": "Get information about the profile upload API"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}

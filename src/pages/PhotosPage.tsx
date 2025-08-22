@@ -87,88 +87,45 @@ const mockAlbums: Album[] = [
   }
 ];
 
-const categories = ['All', 'Events', 'Lifestyle', 'Academic', 'Sports', 'Social'];
-
 const PhotosPage: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const filteredAlbums = mockAlbums.filter(album => {
-    const matchesCategory = selectedCategory === 'All' || album.category === selectedCategory;
     const matchesSearch = album.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          album.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesSearch;
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-reminisce-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
       <main className="flex-grow px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-poppins font-bold text-reminisce-black mb-4">
-              Our Photo Albums
+            <h1 className="text-4xl font-poppins font-bold text-slate-800 dark:text-white mb-4">
+              Photo Gallery
             </h1>
-            <p className="text-lg font-poppins text-reminisce-gray-600 max-w-2xl mx-auto">
-              Browse through our collection of memories and moments captured throughout the year. 
-              Every photo tells a story, every album holds a chapter of our journey.
+            <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+              Relive the moments that made this year unforgettable. 
+              Browse through our collection of memories and share your own.
             </p>
           </div>
 
-          {/* Search and Filter Section */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between">
+          {/* Controls Section */}
+          <div className="flex justify-center mb-8">
             {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-reminisce-gray-400" />
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search albums..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-reminisce-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-reminisce-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
-
-            {/* Filter Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center space-x-2 px-4 py-3 bg-white border border-reminisce-gray-200 rounded-xl hover:border-reminisce-purple-300 transition-all duration-300 font-poppins text-sm"
-              >
-                <Filter className="h-4 w-4 text-reminisce-gray-600" />
-                <span className="text-reminisce-gray-700">{selectedCategory}</span>
-              </button>
-              
-              {isFilterOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50 border border-reminisce-gray-100 soft-shadow animate-soft-scale">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        setIsFilterOpen(false);
-                      }}
-                      className={`block w-full text-left px-4 py-3 text-sm font-poppins transition-all duration-300 ${
-                        selectedCategory === category
-                          ? 'text-reminisce-purple-600 bg-reminisce-purple-50'
-                          : 'text-reminisce-gray-700 hover:bg-reminisce-gray-50'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Upload Button */}
-            <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-reminisce-purple-500 to-reminisce-purple-600 text-white rounded-xl hover:from-reminisce-purple-600 hover:to-reminisce-purple-700 transition-all duration-300 font-poppins font-medium soft-shadow hover:soft-shadow-hover">
-              <Plus className="h-4 w-4" />
-              <span>Create Album</span>
-            </button>
           </div>
 
           {/* Albums Grid */}
@@ -176,7 +133,7 @@ const PhotosPage: React.FC = () => {
             {filteredAlbums.map((album, index) => (
               <Link href={`/photos/${album.id}`} key={album.id}>
                 <div 
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale"
+                  className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale border border-slate-200 dark:border-slate-700"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {/* Album Cover */}
@@ -187,26 +144,26 @@ const PhotosPage: React.FC = () => {
                       className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     {/* Purple Label Strip */}
-                    <div className="absolute top-4 left-4 bg-gradient-to-r from-reminisce-purple-500 to-reminisce-purple-600 text-white px-3 py-1 rounded-full text-xs font-poppins font-medium">
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-poppins font-medium">
                       {album.category}
                     </div>
                     {/* Photo Count Badge */}
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-reminisce-gray-700 px-2 py-1 rounded-full text-xs font-poppins font-medium">
+                    <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-700 dark:text-slate-300 px-2 py-1 rounded-full text-xs font-poppins font-medium">
                       {album.photoCount} photos
                     </div>
                   </div>
 
                   {/* Album Info */}
                   <div className="p-6">
-                    <h3 className="text-xl font-poppins font-semibold text-reminisce-black mb-2 group-hover:text-reminisce-purple-600 transition-colors duration-300">
+                    <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
                       {album.title}
                     </h3>
-                    <p className="text-reminisce-gray-600 text-sm font-poppins mb-4 leading-relaxed">
+                    <p className="text-slate-600 dark:text-slate-300 text-sm font-poppins mb-4 leading-relaxed">
                       {album.description}
                     </p>
                     
                     {/* Album Meta */}
-                    <div className="flex items-center justify-between text-sm text-reminisce-gray-500 font-poppins">
+                    <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 font-poppins">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
                         <span>{album.date}</span>
@@ -231,13 +188,13 @@ const PhotosPage: React.FC = () => {
           {/* Empty State */}
           {filteredAlbums.length === 0 && (
             <div className="text-center py-16">
-              <div className="w-24 h-24 rounded-full bg-reminisce-purple-100 flex items-center justify-center mx-auto mb-6">
-                <Search className="h-12 w-12 text-reminisce-purple-400" />
+              <div className="w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-6">
+                <Search className="h-12 w-12 text-purple-400 dark:text-purple-500" />
               </div>
-              <h3 className="text-xl font-poppins font-semibold text-reminisce-gray-700 mb-2">
+              <h3 className="text-xl font-poppins font-semibold text-slate-700 dark:text-slate-300 mb-2">
                 No albums found
               </h3>
-              <p className="text-reminisce-gray-500 font-poppins">
+              <p className="text-slate-500 dark:text-slate-400 font-poppins">
                 Try adjusting your search or filter criteria
               </p>
             </div>

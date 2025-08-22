@@ -97,114 +97,88 @@ const DepartmentPage: React.FC = () => {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
       <main className="flex-grow px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-poppins font-bold text-slate-800 mb-4">
-              About Our Department
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-poppins font-bold text-slate-800 dark:text-white mb-4">
+              Our Department
             </h1>
-            <p className="text-lg font-poppins text-slate-600 max-w-3xl mx-auto">
-              Discover our academic community, dedicated faculty, and the journey we&apos;ve shared together.
+            <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+              Meet the dedicated faculty and staff who guide our academic journey. 
+              Their expertise and passion shape the future of computer science education.
             </p>
           </div>
 
-          {/* Department Overview Section */}
-          <section className="mb-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left Column - Text Content */}
-              <div className="space-y-6">
+          {/* Department Overview */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 mb-12 border border-slate-200 dark:border-slate-700">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h2 className="text-2xl font-poppins font-bold text-slate-800 dark:text-white mb-4">
+                  Computer Science Department
+                </h2>
+                <p className="text-slate-600 dark:text-slate-300 font-poppins mb-6 leading-relaxed">
+                  Our department is committed to excellence in computer science education, research, and innovation. 
+                  We provide students with cutting-edge knowledge and practical skills needed for the digital age.
+                </p>
+                
                 <div className="space-y-4">
-                  <h2 className="text-3xl font-poppins font-semibold text-slate-800">
-                    Computer Science Department
-                  </h2>
-                  <p className="text-lg font-poppins text-slate-600 leading-relaxed">
-                    Our department has been at the forefront of computer science education for over two decades. 
-                    We pride ourselves on fostering innovation, critical thinking, and practical skills that prepare 
-                    our students for the ever-evolving technology landscape.
-                  </p>
-                  <p className="text-lg font-poppins text-slate-600 leading-relaxed">
-                    With state-of-the-art facilities, dedicated faculty, and a curriculum that balances theoretical 
-                    foundations with hands-on experience, we&apos;ve created an environment where students can thrive 
-                    and develop into the next generation of technology leaders.
-                  </p>
-                </div>
-
-                {/* Department Stats */}
-                <div className="grid grid-cols-3 gap-6 pt-6">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Users className="h-8 w-8 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-poppins font-bold text-slate-800">150+</h3>
-                    <p className="text-sm font-poppins text-slate-600">Students</p>
+                  <div className="flex items-center space-x-3">
+                    <Building className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins">Building A, Science Complex</span>
                   </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Award className="h-8 w-8 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-poppins font-bold text-slate-800">25+</h3>
-                    <p className="text-sm font-poppins text-slate-600">Awards</p>
+                  <div className="flex items-center space-x-3">
+                    <Users className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins">6 Faculty Members</span>
                   </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <BookOpen className="h-8 w-8 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-poppins font-bold text-slate-800">50+</h3>
-                    <p className="text-sm font-poppins text-slate-600">Publications</p>
+                  <div className="flex items-center space-x-3">
+                    <Award className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins">Top 10% Nationally Ranked</span>
                   </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="bg-white rounded-2xl p-6 soft-shadow">
-                  <h3 className="text-lg font-poppins font-semibold text-slate-800 mb-4">Contact Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 text-slate-600 font-poppins">
-                      <Building className="h-5 w-5 text-purple-500" />
-                      <span>Building A, Computer Science Department</span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-slate-600 font-poppins">
-                      <Mail className="h-5 w-5 text-purple-500" />
-                      <span>cs@university.edu</span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-slate-600 font-poppins">
-                      <Phone className="h-5 w-5 text-purple-500" />
-                      <span>+1 (555) 123-4567</span>
-                    </div>
+                  <div className="flex items-center space-x-3">
+                    <BookOpen className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins">15+ Research Areas</span>
                   </div>
                 </div>
               </div>
-
-              {/* Right Column - Illustration */}
-              <div className="relative">
-                <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl p-8 soft-shadow">
-                  <div className="text-center">
-                    <div className="w-32 h-32 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Building className="h-16 w-16 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-poppins font-semibold text-slate-800 mb-4">
-                      Our Mission
-                    </h3>
-                    <p className="text-slate-600 font-poppins leading-relaxed">
-                      To provide exceptional computer science education that empowers students 
-                      to become innovative problem solvers and technology leaders of tomorrow.
-                    </p>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6">
+                <h3 className="text-lg font-poppins font-semibold text-slate-800 dark:text-white mb-4">
+                  Contact Information
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Mail className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins text-sm">cs@university.edu</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Phone className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins text-sm">+1 (555) 123-4567</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                    <span className="text-slate-700 dark:text-slate-300 font-poppins text-sm">Building A, Room 301</span>
                   </div>
                 </div>
+                
+                <button className="mt-4 flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-poppins text-sm font-medium transition-colors duration-300">
+                  <span>Visit Department Website</span>
+                  <ExternalLink className="h-4 w-4" />
+                </button>
               </div>
             </div>
-          </section>
+          </div>
 
           {/* Faculty Section */}
           <section>
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-poppins font-semibold text-slate-800 mb-4">
+              <h2 className="text-3xl font-poppins font-semibold text-slate-800 dark:text-white mb-4">
                 Meet Our Faculty
               </h2>
-              <p className="text-lg font-poppins text-slate-600 max-w-2xl mx-auto">
+              <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
                 Our dedicated faculty brings together expertise from academia and industry, 
                 creating a rich learning environment for our students.
               </p>
@@ -214,25 +188,25 @@ const DepartmentPage: React.FC = () => {
               {mockStaff.map((staff, index) => (
                 <div 
                   key={staff.id}
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale"
+                  className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale border border-slate-200 dark:border-slate-700"
                   style={{ animationDelay: `${index * 0.1}s` }}
                   onClick={() => setSelectedStaff(staff)}
                 >
                   {/* Staff Header */}
-                  <div className="relative p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+                  <div className="relative p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
                     <div className="text-center">
                       <div className="relative inline-block mb-4">
                         <img
                           src={staff.avatar}
                           alt={staff.name}
-                          className="w-20 h-20 rounded-full object-cover border-4 border-white soft-shadow"
+                          className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-slate-700 soft-shadow"
                         />
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white"></div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white dark:border-slate-700"></div>
                       </div>
-                      <h3 className="text-lg font-poppins font-semibold text-slate-800 group-hover:text-purple-600 transition-colors duration-300">
+                      <h3 className="text-lg font-poppins font-semibold text-slate-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
                         {staff.name}
                       </h3>
-                      <p className="text-sm font-poppins text-purple-600 font-medium">
+                      <p className="text-sm font-poppins text-purple-600 dark:text-purple-400 font-medium">
                         {staff.title}
                       </p>
                     </div>
@@ -240,18 +214,18 @@ const DepartmentPage: React.FC = () => {
 
                   {/* Staff Content */}
                   <div className="p-6">
-                    <p className="text-sm font-poppins text-slate-600 mb-4 leading-relaxed">
+                    <p className="text-sm font-poppins text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
                       {staff.bio}
                     </p>
                     
                     {/* Specialties */}
                     <div className="space-y-2">
-                      <p className="text-xs font-poppins font-medium text-slate-700 uppercase tracking-wide">
+                      <p className="text-xs font-poppins font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                         Specialties
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {staff.specialties.map((specialty, idx) => (
-                          <span key={idx} className="bg-purple-50 text-purple-600 px-2 py-1 rounded-full text-xs font-poppins">
+                          <span key={idx} className="bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-full text-xs font-poppins">
                             {specialty}
                           </span>
                         ))}
@@ -259,12 +233,12 @@ const DepartmentPage: React.FC = () => {
                     </div>
 
                     {/* Contact Info */}
-                    <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                      <div className="flex items-center space-x-2 text-xs text-slate-500 font-poppins">
+                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-600 space-y-2">
+                      <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 font-poppins">
                         <Mail className="h-3 w-3" />
                         <span>{staff.email}</span>
                       </div>
-                      <div className="flex items-center space-x-2 text-xs text-slate-500 font-poppins">
+                      <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 font-poppins">
                         <MapPin className="h-3 w-3" />
                         <span>{staff.office}</span>
                       </div>
