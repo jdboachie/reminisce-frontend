@@ -50,11 +50,11 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       setAlbumForm(prev => ({ ...prev, workspaceName: departmentInfo.slug }));
     }
   }, [departmentInfo]);
-
+  
     const loadAlbums = async (showLoading = true) => {
     try {
       if (showLoading) {
-        setLoading(true);
+      setLoading(true);
       }
       setError(null);
       
@@ -92,7 +92,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       setError(err instanceof Error ? err.message : 'Failed to load albums');
     } finally {
       if (showLoading) {
-        setLoading(false);
+      setLoading(false);
       }
     }
   };
@@ -111,7 +111,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
   const handleCreateAlbum = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminToken) return;
-
+    
     try {
       setSubmitting(true);
       setError(null);
@@ -153,8 +153,8 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
         
         // Reset form and close modal
         resetAlbumForm();
-        setModalOpen(false);
-        
+      setModalOpen(false);
+      
         // Add a delay before refreshing albums to ensure backend has processed the data
         setLoading(true);
         setRefreshingAfterCreation(true);
@@ -181,7 +181,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       setSubmitting(false);
     }
   };
-
+  
   const handleDeleteAlbum = async (albumId: string) => {
     if (!adminToken || !confirm('Are you sure you want to delete this album? This action cannot be undone.')) return;
 
@@ -198,7 +198,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
 
       const result = await response.json();
       if (result.success) {
-        setAlbums(prev => prev.filter(album => album._id !== albumId));
+      setAlbums(prev => prev.filter(album => album._id !== albumId));
         showNotification('Album deleted successfully!', 'success');
       } else {
         throw new Error(result.msg || 'Failed to delete album');
@@ -229,7 +229,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       </div>
     );
   }
-
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -243,7 +243,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       <div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
+        <div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
               Albums Management
             </h2>
@@ -310,10 +310,10 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
               </div>
             </div>
           </div>
-        </div>
-
+      </div>
+      
         {/* Error Display */}
-        {error && (
+      {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -334,8 +334,8 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                 Retry
               </button>
             </div>
-          </div>
-        )}
+        </div>
+      )}
 
         {/* Albums Grid */}
         {loading ? (
@@ -369,8 +369,8 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {albums.map((album) => (
-              <div
-                key={album._id}
+            <div
+              key={album._id}
                 className="group relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1"
               >
                 {/* Album Cover */}
@@ -378,7 +378,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                   <div className="text-center">
                     <FolderOpen className="h-16 w-16 text-indigo-500 mx-auto mb-2" />
                     <div className="text-indigo-700 font-semibold text-lg">{album.albumName}</div>
-                  </div>
+              </div>
                 </div>
                 
                 {/* Album Info */}
@@ -419,21 +419,21 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                     >
                       View Album
                     </button>
-                  </div>
                 </div>
+              </div>
                 
                 {/* Delete Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteAlbum(album._id);
-                  }}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteAlbum(album._id);
+                }}
                   className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                  aria-label={`Delete album ${album.albumName}`}
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-              </div>
+                aria-label={`Delete album ${album.albumName}`}
+              >
+                <Trash2 className="h-5 w-5" />
+              </button>
+            </div>
             ))}
           </div>
         )}
@@ -478,21 +478,21 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
           )}
           
           <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-100">
-            <Button 
+          <Button 
               onClick={() => setModalOpen(false)} 
-              variant="secondary"
+            variant="secondary"
               className="px-6"
-            >
-              Cancel
-            </Button>
-            <Button 
-              disabled={submitting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            disabled={submitting}
               type="submit"
               className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 px-6"
-            >
-              {submitting ? 'Creating...' : 'Create Album'}
-            </Button>
-          </div>
+          >
+            {submitting ? 'Creating...' : 'Create Album'}
+          </Button>
+        </div>
         </form>
       </Modal>
     </>

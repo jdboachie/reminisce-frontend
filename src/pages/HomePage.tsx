@@ -1,6 +1,6 @@
+'use client';
+
 import React from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import Link from 'next/link';
 import { 
   Camera, 
@@ -12,8 +12,13 @@ import {
   Heart,
   Star,
   Zap,
-  Crown
+  Crown,
+  Search,
+  Building
 } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { API_CONFIG } from '@/config/api';
 
 // Helper function to get icon color from gradient
 const getIconColor = (gradient: string) => {
@@ -80,10 +85,59 @@ const actionCards = [
 ];
 
 const HomePage: React.FC = () => {
+  const [showDepartmentInput, setShowDepartmentInput] = useState(false);
+  const [departmentName, setDepartmentName] = useState('');
+  const [inputLoading, setInputLoading] = useState(false);
+  const [inputError, setInputError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleDepartmentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!departmentName.trim()) {
+      setInputError('Please enter your department name');
+      return;
+    }
+
+    try {
+      setInputLoading(true);
+      setInputError(null);
+      
+      // Search for department by name
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LIST_DEPARTMENTS}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to search departments');
+      }
+      
+      const departments = await response.json();
+      
+      // Find department by name (case-insensitive)
+      const department = departments.find((dept: any) => 
+        dept.name.toLowerCase() === departmentName.toLowerCase().trim()
+      );
+      
+      if (department) {
+        // Redirect to department page
+        router.push(`/department/${department.slug}`);
+      } else {
+        setInputError('Department not found. Please check the spelling or contact your administrator.');
+      }
+    } catch (err) {
+      setInputError(err instanceof Error ? err.message : 'Failed to find department');
+    } finally {
+      setInputLoading(false);
+    }
+  };
+
+  const toggleDepartmentInput = () => {
+    setShowDepartmentInput(!showDepartmentInput);
+    setDepartmentName('');
+    setInputError(null);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <Header />
-      
       {/* Hero Section with Subtle Background */}
       <main className="flex-grow relative overflow-hidden">
         {/* Subtle animated background */}
@@ -114,6 +168,66 @@ const HomePage: React.FC = () => {
               Step into our digital yearbook where memories come alive. Every photo, every event, 
               every moment captured and preserved for you to cherish forever.
             </p>
+
+            {/* Department Input Toggle - Small Button */}
+            <div className="mb-8">
+              {!showDepartmentInput ? (
+                <button
+                  onClick={toggleDepartmentInput}
+                  className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-sm font-medium border border-slate-200 dark:border-slate-600 backdrop-blur-sm"
+                >
+                  <Building className="h-4 w-4 mr-2" />
+                  Enter Department Name
+                </button>
+              ) : (
+                <div className="max-w-md mx-auto">
+                  <form onSubmit={handleDepartmentSubmit} className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="e.g., Computer Science, Accounting..."
+                        value={departmentName}
+                        onChange={(e) => setDepartmentName(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-700 dark:text-slate-300"
+                        disabled={inputLoading}
+                      />
+                    </div>
+                    
+                    <div className="flex space-x-3">
+                      <button
+                        type="submit"
+                        disabled={inputLoading || !departmentName.trim()}
+                        className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors font-medium"
+                      >
+                        {inputLoading ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Finding Department...
+                          </div>
+                        ) : (
+                          'Enter Department'
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleDepartmentInput}
+                        className="px-4 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                  
+                  {/* Input Error Display */}
+                  {inputError && (
+                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <p className="text-red-700 dark:text-red-300 text-sm">{inputError}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
@@ -177,8 +291,6 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       </main>
-      
-      <Footer />
     </div>
   );
 };

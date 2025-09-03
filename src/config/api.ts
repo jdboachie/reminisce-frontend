@@ -47,6 +47,9 @@ export const API_CONFIG = {
     DELETE_EVENT: '/events',
     GET_EVENT_STATS: '/events/stats',
     
+    // Client-side endpoints
+    GET_DEPARTMENT_CLIENT: '/department',
+    
     // Reports
     CREATE_REPORT: '/report',
     GET_REPORTS: '/report',

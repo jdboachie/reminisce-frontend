@@ -61,7 +61,7 @@ export default function TestBackendPage() {
             href="/"
             className="text-blue-600 hover:text-blue-700 text-sm underline"
           >
-            ← Back to Home
+            ← Back to  Landing page
           </a>
         </div>
       </div>

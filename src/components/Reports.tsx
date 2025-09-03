@@ -234,33 +234,33 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
+              <div className="flex items-center justify-between">
+                <div>
               <p className="text-sm font-medium text-gray-600">Total Reports</p>
               <p className="text-2xl font-bold text-gray-900">{reports.length}</p>
-            </div>
+                </div>
             <div className="p-3 bg-indigo-100 rounded-full">
               <MessageSquare className="h-6 w-6 text-indigo-600" />
             </div>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
+              <div className="flex items-center justify-between">
+                <div>
               <p className="text-sm font-medium text-gray-600">Unresolved</p>
               <p className="text-2xl font-bold text-orange-600">{unresolvedCount}</p>
-            </div>
+                </div>
             <div className="p-3 bg-orange-100 rounded-full">
               <AlertTriangle className="h-6 w-6 text-orange-600" />
             </div>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
+              <div className="flex items-center justify-between">
+                <div>
               <p className="text-sm font-medium text-gray-600">Resolved</p>
               <p className="text-2xl font-bold text-green-600">{resolvedCount}</p>
-            </div>
+                </div>
             <div className="p-3 bg-green-100 rounded-full">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
@@ -271,7 +271,7 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
       {/* Error Display */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-5 h-5 bg-red-400 rounded-full flex items-center justify-center">
@@ -295,33 +295,33 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
 
       {/* Search and Filter */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="flex items-center gap-2 flex-1 bg-slate-50 rounded-lg px-3 py-2">
-            <Search className="h-4 w-4 text-slate-400" />
-            <input
-              type="text"
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex items-center gap-2 flex-1 bg-slate-50 rounded-lg px-3 py-2">
+                <Search className="h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
               placeholder="Search reports by title, content, student name, email, or reference number..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 border-0 bg-transparent placeholder-slate-400 focus:ring-0 text-sm text-slate-800 focus:outline-none"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-slate-500" />
-            <select
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 border-0 bg-transparent placeholder-slate-400 focus:ring-0 text-sm text-slate-800 focus:outline-none"
+                />
+              </div>
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-slate-500" />
+                  <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as ReportFilter)}
-              className="border border-slate-200 rounded-md text-sm px-3 py-2 bg-white text-slate-800 focus:outline-none focus:border-blue-500"
-            >
+                    className="border border-slate-200 rounded-md text-sm px-3 py-2 bg-white text-slate-800 focus:outline-none focus:border-blue-500"
+                  >
               <option value="all">All Reports</option>
               <option value="unresolved">Unresolved</option>
-              <option value="resolved">Resolved</option>
-            </select>
+                    <option value="resolved">Resolved</option>
+                  </select>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Reports List */}
+          {/* Reports List */}
       {filteredReports.length === 0 ? (
         <div className="text-center py-16">
           <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -335,13 +335,13 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredReports.map((report) => (
+          <div className="space-y-4">
+            {filteredReports.map((report) => (
             <div key={report._id} className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${
               report.resolved ? 'opacity-75 bg-gray-50' : ''
             }`}>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-lg ${
                     report.resolved ? 'bg-green-100' : 'bg-orange-100'
                   }`}>
@@ -350,8 +350,8 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
                     ) : (
                       <AlertTriangle className="h-5 w-5 text-orange-600" />
                     )}
-                  </div>
-                  <div className="flex-1">
+                    </div>
+                    <div className="flex-1">
                     <h3 className="font-semibold text-slate-800 mb-2 text-lg">{report.title}</h3>
                     <p className="text-slate-600 mb-3 leading-relaxed">{report.content}</p>
                     <div className="flex items-center gap-4 text-sm text-slate-500">
@@ -364,20 +364,20 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
                         <span className="font-medium">Ref:</span>
                         <span>{report.referenceNumber}</span>
                       </div>
-                      <span>•</span>
+                        <span>•</span>
                       <div className="flex items-center gap-1">
                         <span className="font-medium">Email:</span>
                         <span>{report.studentEmail}</span>
                       </div>
-                      <span>•</span>
+                        <span>•</span>
                       <div className="flex items-center gap-1">
                         <span className="font-medium">Workspace:</span>
                         <span>{report.workspaceName}</span>
                       </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                   <span className={`px-3 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${
                     report.resolved 
                       ? 'bg-green-100 text-green-700' 
@@ -394,15 +394,15 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
                         Unresolved
                       </>
                     )}
-                  </span>
+                    </span>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                 <div className="text-sm text-slate-500">
                   Reported on: {formatDate(report.createdAt)}
-                </div>
-                <div className="flex items-center gap-2">
+                  </div>
+                  <div className="flex items-center gap-2">
                   <Button 
                     onClick={() => handleToggleStatus(report._id)}
                     disabled={updatingReport === report._id}
@@ -432,7 +432,7 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
                         )}
                       </>
                     )}
-                  </Button>
+            </Button>
                   
                   <Button 
                     onClick={() => handleDeleteReport(report._id)}
@@ -450,7 +450,7 @@ export const Reports: React.FC<ReportsProps> = ({ adminToken, departmentInfo }) 
                         <span>Delete</span>
                       </>
                     )}
-                  </Button>
+            </Button>
                 </div>
               </div>
             </div>
