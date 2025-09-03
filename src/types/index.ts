@@ -19,6 +19,7 @@ export interface Event {
   eventDate: string;
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   createdBy: string;
+  department: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +29,7 @@ export interface CreateEventPayload {
   description: string;
   venue: string;
   eventDate: string;
+  department: string;
 }
 
 export interface UpdateEventPayload {
@@ -132,7 +134,7 @@ export interface FormFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  type?: 'text' | 'email' | 'tel' | 'date' | 'time' | 'number';
+  type?: 'text' | 'email' | 'tel' | 'date' | 'time' | 'datetime-local' | 'number';
   placeholder?: string;
   required?: boolean;
   isTextarea?: boolean;
@@ -141,11 +143,12 @@ export interface FormFieldProps {
 }
 
 export interface ButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
   variant?: 'primary' | 'secondary' | 'danger';
   children: React.ReactNode;
   type?: 'button' | 'submit';
   className?: string;
+  disabled?: boolean;
 }
 
 export interface NotificationState {
@@ -211,6 +214,7 @@ export interface CreateEventPayload {
   description: string;
   venue: string;
   eventDate: string;
+  department: string;
 }
 
 export interface UpdateEventPayload {
@@ -219,6 +223,7 @@ export interface UpdateEventPayload {
   venue?: string;
   eventDate?: string;
   status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  department?: string;
 }
 
 export interface EventStats {

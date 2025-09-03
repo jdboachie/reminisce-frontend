@@ -245,7 +245,8 @@ export const eventAPI = {
       throw new Error(`Failed to create event: ${response.statusText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    return result.data; // Backend returns { success, message, data }
   },
 
   async getAllEvents(token: string): Promise<Event[]> {
@@ -258,7 +259,22 @@ export const eventAPI = {
       throw new Error(`Failed to fetch events: ${response.statusText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    return result.data.events; // Backend returns { success, data: { events, pagination } }
+  },
+
+  async getEventsByDepartment(department: string, token: string): Promise<Event[]> {
+    const response = await authenticatedApiCall(
+      `${API_CONFIG.ENDPOINTS.GET_EVENTS_BY_DEPARTMENT}/${department}`,
+      token
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events by department: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result.data.events; // Backend returns { success, data: { events, pagination } }
   },
 
   async getEventById(eventId: string, token: string): Promise<Event> {
@@ -288,7 +304,8 @@ export const eventAPI = {
       throw new Error(`Failed to update event: ${response.statusText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    return result.data; // Backend returns { success, message, data }
   },
 
   async deleteEvent(eventId: string, token: string): Promise<void> {

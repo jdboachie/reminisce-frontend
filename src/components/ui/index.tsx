@@ -85,7 +85,8 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary', 
   children, 
   type = 'button', 
-  className = '' 
+  className = '',
+  disabled = false
 }) => {
   const baseClasses = "px-4 py-2 rounded-lg transition-colors font-medium flex items-center space-x-2";
   const variants = {
@@ -98,6 +99,7 @@ export const Button: React.FC<ButtonProps> = ({
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`${baseClasses} ${variants[variant]} ${className}`}
     >
       {children}
