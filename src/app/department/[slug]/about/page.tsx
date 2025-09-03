@@ -64,7 +64,6 @@ export default function DepartmentAboutRoute() {
       setLoading(true);
       setError(null);
 
-      // Fetch department info
       const deptResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_DEPARTMENT_BY_SLUG}/${departmentSlug}`);
       if (!deptResponse.ok) {
         throw new Error('Department not found');
@@ -72,12 +71,10 @@ export default function DepartmentAboutRoute() {
       const deptData = await deptResponse.json();
       setDepartment(deptData);
 
-      // Fetch events for this department only
       const eventsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_EVENTS}?department=${deptData.name}`);
       if (eventsResponse.ok) {
         const eventsResult = await eventsResponse.json();
         if (eventsResult.success && eventsResult.data && eventsResult.data.events) {
-          // Filter events by department name
           const departmentEvents = eventsResult.data.events.filter((event: Event) => 
             event.department === deptData.name
           );
@@ -90,7 +87,6 @@ export default function DepartmentAboutRoute() {
       if (albumsResponse.ok) {
         const albumsResult = await albumsResponse.json();
         if (albumsResult.success && albumsResult.data) {
-          // Filter albums by department
           const departmentAlbums = albumsResult.data.filter((album: Album) => 
             album.department === deptData.name
           );
@@ -98,11 +94,9 @@ export default function DepartmentAboutRoute() {
         }
       }
 
-      // Fetch students for this department only
       const studentsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_STUDENTS_BY_WORKSPACE}/${departmentSlug}`);
       if (studentsResponse.ok) {
         const studentsData = await studentsResponse.json();
-        // Filter students by workspace (department name)
         const departmentStudents = studentsData.filter((student: Student) => 
           student.workspace === deptData.name
         );
@@ -175,7 +169,6 @@ export default function DepartmentAboutRoute() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm border border-gray-200">
           <button
@@ -217,7 +210,6 @@ export default function DepartmentAboutRoute() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="space-y-6">
           <div className="text-center">
