@@ -1,259 +1,498 @@
-// components/UsersManagement.tsx
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { Plus, Upload, Search, Filter, Trash2 } from 'lucide-react';
-import { Button, Modal, FormField } from './ui';
-import { useAppState } from '../hooks/useAppState';
-import { useNotification } from '../hooks/useNotification';
-import { User } from '../types';
+'use client';
 
-export const UsersManagement: React.FC = () => {
-  const { users, setUsers } = useAppState();
-  const { showNotification } = useNotification();
+import React, { useState, useEffect } from 'react';
+import { Plus, Users, Edit, Trash2, Upload, Download, Search, Filter } from 'lucide-react';
+import { studentAPI } from '../utils';
+import { Student, CreateStudentPayload, UpdateStudentPayload } from '../types';
+
+interface UsersManagementProps {
+  adminToken?: string;
+}
+
+const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken }) => {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
+  const [workspaces, setWorkspaces] = useState<string[]>([]);
   
-  const [modals, setModals] = useState({
-    user: false,
-    bulkUpload: false
+  // Form state
+  const [formData, setFormData] = useState<CreateStudentPayload>({
+    name: '',
+    nickname: '',
+    image: '',
+    referenceNumber: '',
+    phoneNumber: '',
+    quote: '',
+    workspace: ''
+  });
+  const [uploadData, setUploadData] = useState({
+    workspace: '',
+    referenceNumbers: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (adminToken) {
+      loadStudents();
+    }
+  }, [adminToken]);
+
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      const data = await studentAPI.getAllStudents();
+      setStudents(data);
+      
+      // Extract unique workspaces - Fixed TypeScript issue
+      const uniqueWorkspaces = Array.from(new Set(data.map(student => student.workspace)));
+      setWorkspaces(uniqueWorkspaces);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load students');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminToken) return;
+
+    try {
+      setSubmitting(true);
+      setError(null);
+      
+      if (editingStudent) {
+        // Update existing student
+        const updatedStudent = await studentAPI.updateStudent(formData);
+        setStudents(prev => prev.map(s => 
+          s._id === editingStudent._id ? updatedStudent : s
+        ));
+        setEditingStudent(null);
+      } else {
+        // Create new student
+        const newStudent = await studentAPI.createStudent(formData, adminToken);
+        setStudents(prev => [newStudent, ...prev]);
+      }
+      
+      // Reset form
+      setFormData({
+        name: '',
+        nickname: '',
+        image: '',
+        referenceNumber: '',
+        phoneNumber: '',
+        quote: '',
+        workspace: ''
+      });
+      setShowCreateForm(false);
+      
+      alert(editingStudent ? 'Student updated successfully!' : 'Student created successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save student');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminToken) return;
+
+    try {
+      setSubmitting(true);
+      setError(null);
+      
+      const referenceNumbers = uploadData.referenceNumbers
+        .split('\n')
+        .map(ref => ref.trim())
+        .filter(ref => ref.length > 0);
+      
+      await studentAPI.uploadStudentList(uploadData.workspace, referenceNumbers, adminToken);
+      
+      // Refresh students list
+      await loadStudents();
+      
+      // Reset form
+      setUploadData({ workspace: '', referenceNumbers: '' });
+      setShowUploadForm(false);
+      
+      alert('Student list uploaded successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload student list');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = (student: Student) => {
+    setEditingStudent(student);
+    setFormData({
+      name: student.name,
+      nickname: student.nickname,
+      image: student.image,
+      referenceNumber: student.referenceNumber,
+      phoneNumber: student.phoneNumber,
+      quote: student.quote,
+      workspace: student.workspace
+    });
+    setShowCreateForm(true);
+  };
+
+  const handleDelete = async (student: Student) => {
+    if (!adminToken || !confirm(`Are you sure you want to delete ${student.name}?`)) return;
+
+    try {
+      await studentAPI.deleteStudent(student.referenceNumber, adminToken);
+      setStudents(prev => prev.filter(s => s._id !== student._id));
+      alert('Student deleted successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete student');
+    }
+  };
+
+  const filteredStudents = students.filter(student => {
+    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesWorkspace = selectedWorkspace === 'all' || student.workspace === selectedWorkspace;
+    return matchesSearch && matchesWorkspace;
   });
 
-  const [forms, setForms] = useState({
-    user: { indexNumber: '', name: '', email: '' },
-    bulkUsers: ''
-  });
+  if (!adminToken) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Please log in to manage students.</p>
+      </div>
+    );
+  }
 
-  const generateId = () => Date.now().toString() + Math.random();
-
-  const openModal = (modalName: keyof typeof modals) => {
-    setModals(prev => ({ ...prev, [modalName]: true }));
-  };
-
-  const closeModal = (modalName: keyof typeof modals) => {
-    setModals(prev => ({ ...prev, [modalName]: false }));
-  };
-
-  const updateForm = (
-    formName: 'user' | 'bulkUsers', 
-    field: string, 
-    value: string
-  ) => {
-    if (formName === 'user') {
-      setForms(prev => ({
-        ...prev,
-        user: { ...prev.user, [field]: value }
-      }));
-    } else if (formName === 'bulkUsers') {
-      setForms(prev => ({
-        ...prev,
-        bulkUsers: value
-      }));
-    }
-  };
-
-  const resetForm = (formName: 'user' | 'bulkUsers') => {
-    if (formName === 'user') {
-      setForms(prev => ({ ...prev, user: { indexNumber: '', name: '', email: '' } }));
-    } else if (formName === 'bulkUsers') {
-      setForms(prev => ({ ...prev, bulkUsers: '' }));
-    }
-  };
-
-  const addUser = () => {
-    const { indexNumber, name, email } = forms.user;
-    if (!indexNumber || !name || !email) {
-      showNotification('Please fill all required fields', 'error');
-      return;
-    }
-    
-    const user: User = {
-      id: generateId(),
-      indexNumber,
-      name,
-      email,
-      joinedAt: new Date().toISOString().split('T')[0],
-      status: 'active'
-    };
-    
-    setUsers(prev => [...prev, user]);
-    resetForm('user');
-    closeModal('user');
-    showNotification('User added successfully!', 'success');
-  };
-
-  const deleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      showNotification('User deleted successfully!', 'success');
-    }
-  };
-
-  const processBulkUpload = () => {
-    if (!forms.bulkUsers.trim()) {
-      showNotification('Please enter index numbers', 'error');
-      return;
-    }
-
-    const indexNumbers = forms.bulkUsers.split('\n').filter(num => num.trim());
-    const newUsers: User[] = indexNumbers.map(indexNumber => ({
-      id: generateId(),
-      indexNumber: indexNumber.trim(),
-      name: `Student ${indexNumber.trim()}`,
-      email: `${indexNumber.trim().toLowerCase()}@university.edu`,
-      joinedAt: new Date().toISOString().split('T')[0],
-      status: 'active'
-    }));
-
-    setUsers(prev => [...prev, ...newUsers]);
-    resetForm('bulkUsers');
-    closeModal('bulkUpload');
-    showNotification(`${newUsers.length} users added successfully!`, 'success');
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-slate-800">Users Management</h2>
-          <div className="flex space-x-3">
-            <Button onClick={() => openModal('bulkUpload')} variant="secondary">
-              <Upload className="h-4 w-4" />
-              <span>Bulk Upload</span>
-            </Button>
-            <Button onClick={() => openModal('user')}>
-              <Plus className="h-4 w-4" />
-              <span>Add User</span>
-            </Button>
-          </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
+          <p className="text-gray-600">Manage student records and information</p>
         </div>
+          <div className="flex space-x-3">
+          <button
+            onClick={() => setShowUploadForm(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <Upload className="h-5 w-5" />
+            <span>Upload List</span>
+          </button>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add Student</span>
+          </button>
+        </div>
+      </div>
 
-        <div className="bg-white rounded-2xl soft-shadow overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search users..."
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-slate-900"
-                />
-              </div>
-              <button className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50">
-                <Filter className="h-4 w-4 text-slate-400" />
-              </button>
+      {/* Search and Filter */}
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name or reference number..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Index Number</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Joined</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {user.avatar ? (
-                          <Image 
-                            src={user.avatar} 
-                            alt={user.name}
-                            width={40}
-                            height={40}
-                            className="rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                            <span className="text-white font-medium">{user.name.charAt(0)}</span>
-                          </div>
-                        )}
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-slate-900">{user.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{user.indexNumber}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{user.joinedAt}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => deleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <select
+              value={selectedWorkspace}
+              onChange={(e) => setSelectedWorkspace(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Workspaces</option>
+              {workspaces.map(workspace => (
+                <option key={workspace} value={workspace}>{workspace}</option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Modals */}
-      <Modal isOpen={modals.user} onClose={() => closeModal('user')} title="Add New User">
-        <div className="space-y-4">
-          <FormField
-            label="Index Number"
-            value={forms.user.indexNumber}
-            onChange={(value) => updateForm('user', 'indexNumber', value)}
-            placeholder="e.g., CS2024003"
-            required
-          />
-          <FormField
-            label="Full Name"
-            value={forms.user.name}
-            onChange={(value) => updateForm('user', 'name', value)}
-            placeholder="Enter full name"
-            required
-          />
-          <FormField
-            label="Email"
-            type="email"
-            value={forms.user.email}
-            onChange={(value) => updateForm('user', 'email', value)}
-            placeholder="user@university.edu"
-            required
-          />
+      {/* Create/Edit Student Form */}
+      {showCreateForm && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {editingStudent ? 'Edit Student' : 'Add New Student'}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
         </div>
-        <div className="flex justify-end space-x-3 mt-6">
-          <Button onClick={() => closeModal('user')} variant="secondary">Cancel</Button>
-          <Button onClick={addUser}>Add User</Button>
-        </div>
-      </Modal>
 
-      <Modal isOpen={modals.bulkUpload} onClose={() => closeModal('bulkUpload')} title="Bulk Upload Users">
-        <div className="space-y-4">
-          <FormField
-            label="Index Numbers (one per line)"
-            value={forms.bulkUsers}
-            onChange={(value) => updateForm('bulkUsers', 'bulkUsers', value)}
-            placeholder="CS2024003&#10;CS2024004&#10;CS2024005&#10;..."
-            isTextarea
-            rows={10}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nickname
+                </label>
+                <input
+                  type="text"
+                  value={formData.nickname}
+                  onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reference Number *
+                </label>
+                <input
+                  type="text"
+                  value={formData.referenceNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, referenceNumber: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+            </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+          </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Workspace *
+                </label>
+                <input
+                  type="text"
+                  value={formData.workspace}
+                  onChange={(e) => setFormData(prev => ({ ...prev, workspace: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                          </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profile Image URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                        </div>
+                      </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Quote
+              </label>
+              <textarea
+                value={formData.quote}
+                onChange={(e) => setFormData(prev => ({ ...prev, quote: e.target.value }))}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter a memorable quote..."
+              />
+            </div>
+            
+            {error && (
+              <p className="text-red-600 text-sm">{error}</p>
+            )}
+            
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {submitting ? 'Saving...' : (editingStudent ? 'Update Student' : 'Create Student')}
+              </button>
+                      <button
+                type="button"
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setEditingStudent(null);
+                  setFormData({
+                    name: '',
+                    nickname: '',
+                    image: '',
+                    referenceNumber: '',
+                    phoneNumber: '',
+                    quote: '',
+                    workspace: ''
+                  });
+                  setError(null);
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Cancel
+                      </button>
+          </div>
+          </form>
+        </div>
+      )}
+
+      {/* Upload Student List Form */}
+      {showUploadForm && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Student List</h3>
+          <form onSubmit={handleUpload} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Workspace *
+              </label>
+              <input
+                type="text"
+                value={uploadData.workspace}
+                onChange={(e) => setUploadData(prev => ({ ...prev, workspace: e.target.value }))}
+                placeholder="e.g., computer-science"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
-          <p className="text-sm text-slate-500">
-            Enter index numbers, one per line. Email addresses will be auto-generated.
-          </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reference Numbers (one per line) *
+              </label>
+              <textarea
+                value={uploadData.referenceNumbers}
+                onChange={(e) => setUploadData(prev => ({ ...prev, referenceNumbers: e.target.value }))}
+                rows={5}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="REF001&#10;REF002&#10;REF003"
+            required
+          />
+              <p className="text-sm text-gray-500 mt-1">
+                Enter one reference number per line. Students will be created with these reference numbers.
+              </p>
+            </div>
+            
+            {error && (
+              <p className="text-red-600 text-sm">{error}</p>
+            )}
+            
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+              >
+                {submitting ? 'Uploading...' : 'Upload List'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowUploadForm(false);
+                  setUploadData({ workspace: '', referenceNumbers: '' });
+                  setError(null);
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
-        <div className="flex justify-end space-x-3 mt-6">
-          <Button onClick={() => closeModal('bulkUpload')} variant="secondary">Cancel</Button>
-          <Button onClick={processBulkUpload}>Upload Users</Button>
+      )}
+
+      {/* Students List */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Students ({filteredStudents.length})
+          </h3>
         </div>
-      </Modal>
-    </>
+        
+        {filteredStudents.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No students found.</p>
+            <p className="text-sm">Try adjusting your search or create a new student.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {filteredStudents.map((student) => (
+              <div key={student._id} className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={student.image || '/default-avatar.png'}
+                      alt={student.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900">{student.name}</h4>
+                      <p className="text-sm text-gray-600">{student.nickname}</p>
+                      <p className="text-sm text-gray-500">Ref: {student.referenceNumber}</p>
+                      <p className="text-xs text-gray-400">Workspace: {student.workspace}</p>
+                      {student.quote && (
+                        <p className="text-sm text-gray-700 mt-1 italic">"{student.quote}"</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleEdit(student)}
+                      className="p-2 text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                      title="Edit student"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(student)}
+                      className="p-2 text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                      title="Delete student"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        </div>
+        </div>
   );
 };
+
+export default UsersManagement;

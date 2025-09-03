@@ -12,49 +12,84 @@ export interface User {
 }
 
 export interface Event {
-  imageUrl: string;
-  id: string;
+  _id: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
-  location: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
-  attendees: number;
-  maxAttendees?: number;
+  venue: string;
+  eventDate: Date;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Album {
-  id: string;
-  name: string;
-  description: string;
-  imageCount: number;
-  coverImage?: string;
-  createdAt: string;
+  _id: string;
+  albumName: string;
+  workspaceName: string;
+  isActive: boolean;
+  createdAt: Date;
 }
 
-// // Add the Picture interface
-// export interface Pictures {
-//   id: string;
-//   albumId: string;
-//   title: string;
-//   description: string;
-//   tags: string[];
-//   imageUrl: string;
-//   uploadedBy: string;
-//   uploadedAt: string;
-//   likes: number;
-//   views: number;
-// }
-
 export interface DepartmentInfo {
+  _id: string;
   name: string;
-  description: string;
+  code: string;
+  slug: string;
+  adminId: string;
+  createdAt: Date;
+  description?: string;
   logo?: string;
-  contactEmail: string;
-  contactPhone: string;
-  address: string;
-  shareableLink: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  address?: string;
+  shareableLink?: string;
+}
+
+export interface DepartmentStatistics {
+  department: {
+    name: string;
+    code: string;
+    slug: string;
+  };
+  statistics: {
+    totalUsers: number;
+    activeEvents: number;
+    totalAlbums: number;
+    totalImages: number;
+  };
+}
+
+export interface Student {
+  _id: string;
+  name: string;
+  nickname: string;
+  image: string;
+  referenceNumber: string;
+  phoneNumber: string;
+  quote: string;
+  workspace: string;
+  createdAt: Date;
+}
+
+export interface Image {
+  _id: string;
+  albumName: string;
+  pictureURL: string;
+  uploadedBy: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface Report {
+  _id: string;
+  title: string;
+  workspaceName: string;
+  content: string;
+  studentName: string;
+  studentEmail: string;
+  isActive: boolean;
+  createdAt: Date;
 }
 
 export interface Tab {
@@ -103,21 +138,79 @@ export interface NotificationState {
   type: 'success' | 'error';
 }
 
-export interface Album {
-  id: string;
-  name: string;
-  description: string;
+export interface CloudinaryUploadResponse {
+  public_id: string;
+  secure_url: string;
+  url: string;
+  format: string;
+  width: number;
+  height: number;
 }
 
-export interface Pictures {
-  id: string;
-  albumId: string;
+export interface CreateDepartmentPayload {
+  name: string;
+  code: string;
+}
+
+export interface CreateStudentPayload {
+  name: string;
+  nickname: string;
+  image: string;
+  referenceNumber: string;
+  phoneNumber: string;
+  quote: string;
+  workspace: string;
+}
+
+export interface UpdateStudentPayload {
+  name?: string;
+  nickname?: string;
+  image?: string;
+  phoneNumber?: string;
+  quote?: string;
+  workspace?: string;
+}
+
+export interface CreateImagePayload {
+  albumName: string;
+  pictureURL: string;
+  uploadedBy: string;
+}
+
+export interface CreateReportPayload {
+  title: string;
+  content: string;
+  workspaceName: string;
+  studentName: string;
+  studentEmail: string;
+}
+
+export interface CreateAlbumPayload {
+  albumName: string;
+  workspaceName: string;
+}
+
+export interface CreateEventPayload {
   title: string;
   description: string;
-  imageUrl: string;
-  tags?: string[];
-  uploadedBy?: string;
-  uploadedAt?: string;
-  likes?: number;
-  views?: number;
+  venue: string;
+  eventDate: Date;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  createdBy: string;
+}
+
+export interface UpdateEventPayload {
+  title?: string;
+  description?: string;
+  venue?: string;
+  eventDate?: Date;
+  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+}
+
+export interface EventStats {
+  total: number;
+  upcoming: number;
+  ongoing: number;
+  completed: number;
+  cancelled: number;
 }

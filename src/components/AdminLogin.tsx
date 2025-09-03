@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { User, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { authAPI } from '../utils';
 
 interface AdminLoginProps {
   onSuccess: (token: string) => void;
@@ -20,19 +21,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (!response.ok) {
-        throw new Error('Authentication failed');
-      }
-
-      const data = await response.json();
+      const data = await authAPI.login(username, password);
       localStorage.setItem('adminToken', data.token);
       onSuccess(data.token);
     } catch (error) {
