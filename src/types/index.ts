@@ -16,11 +16,26 @@ export interface Event {
   title: string;
   description: string;
   venue: string;
-  eventDate: Date;
+  eventDate: string;
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEventPayload {
+  title: string;
+  description: string;
+  venue: string;
+  eventDate: string;
+}
+
+export interface UpdateEventPayload {
+  title?: string;
+  description?: string;
+  venue?: string;
+  eventDate?: string;
+  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 }
 
 export interface Album {
@@ -157,6 +172,12 @@ export interface CreateStudentPayload {
   workspace: string;
 }
 
+export interface UploadStudentListResponse {
+  msg: string;
+  unaddedReferenceNumbers: string[];
+  alredyAddedReferenceNumbers: string[];
+}
+
 export interface UpdateStudentPayload {
   name?: string;
   nickname?: string;
@@ -189,16 +210,14 @@ export interface CreateEventPayload {
   title: string;
   description: string;
   venue: string;
-  eventDate: Date;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  createdBy: string;
+  eventDate: string;
 }
 
 export interface UpdateEventPayload {
   title?: string;
   description?: string;
   venue?: string;
-  eventDate?: Date;
+  eventDate?: string;
   status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 }
 

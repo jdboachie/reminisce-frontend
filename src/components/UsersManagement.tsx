@@ -33,6 +33,15 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
     referenceNumbers: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [uploadResults, setUploadResults] = useState<{
+    success: boolean;
+    message: string;
+    details?: {
+      alredyAddedReferenceNumbers: string[];
+      unaddedReferenceNumbers: string[];
+      totalProcessed: number;
+    };
+  } | null>(null);
 
   useEffect(() => {
     if (adminToken) {
@@ -116,16 +125,27 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         .map(ref => ref.trim())
         .filter(ref => ref.length > 0);
       
-      await studentAPI.uploadStudentList(uploadData.workspace, referenceNumbers, adminToken);
+      const result = await studentAPI.uploadStudentList(uploadData.workspace, referenceNumbers, adminToken);
       
       // Refresh students list
       await loadStudents();
       
+      // Show detailed results
+      const totalProcessed = referenceNumbers.length - result.alredyAddedReferenceNumbers.length - result.unaddedReferenceNumbers.length;
+      
+      setUploadResults({
+        success: true,
+        message: `Upload completed successfully!`,
+        details: {
+          alredyAddedReferenceNumbers: result.alredyAddedReferenceNumbers,
+          unaddedReferenceNumbers: result.unaddedReferenceNumbers,
+          totalProcessed
+        }
+      });
+      
       // Reset form
       setUploadData({ workspace: '', referenceNumbers: '' });
       setShowUploadForm(false);
-      
-      alert('Student list uploaded successfully!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload student list');
     } finally {
@@ -321,14 +341,17 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
               <textarea
                 value={uploadData.referenceNumbers}
                 onChange={(e) => setUploadData(prev => ({ ...prev, referenceNumbers: e.target.value }))}
-                rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="REF001&#10;REF002&#10;REF003"
-            required
-          />
-              <p className="text-sm text-gray-500 mt-1">
-                Enter one reference number per line. Students will be created with these reference numbers.
-              </p>
+                rows={8}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
+                placeholder="REF001&#10;REF002&#10;REF003&#10;REF004&#10;REF005"
+                required
+              />
+              <div className="text-sm text-gray-600 mt-2 space-y-1">
+                <p>• Enter one reference number per line</p>
+                <p>• Students will be created with these reference numbers</p>
+                <p>• The workspace will be automatically set to: <span className="font-semibold text-blue-600">{departmentInfo?.name || 'Current Department'}</span></p>
+                <p>• Duplicate reference numbers will be skipped</p>
+              </div>
             </div>
             
             {error && (
@@ -356,6 +379,68 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Upload Results */}
+      {uploadResults && (
+        <div className={`bg-white rounded-lg shadow-md p-6 ${uploadResults.success ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500'}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className={`text-lg font-semibold ${uploadResults.success ? 'text-green-800' : 'text-red-800'}`}>
+              {uploadResults.message}
+            </h3>
+            <button
+              onClick={() => setUploadResults(null)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+
+            </button>
+          </div>
+          
+          {uploadResults.details && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-green-50 p-3 rounded-md">
+                  <p className="text-sm font-medium text-green-800">Successfully Added</p>
+                  <p className="text-2xl font-bold text-green-600">{uploadResults.details.totalProcessed}</p>
+                </div>
+                {uploadResults.details.alredyAddedReferenceNumbers.length > 0 && (
+                  <div className="bg-yellow-50 p-3 rounded-md">
+                    <p className="text-sm font-medium text-yellow-800">Already Exists</p>
+                    <p className="text-2xl font-bold text-yellow-600">{uploadResults.details.alredyAddedReferenceNumbers.length}</p>
+                  </div>
+                )}
+                {uploadResults.details.unaddedReferenceNumbers.length > 0 && (
+                  <div className="bg-red-50 p-3 rounded-md">
+                    <p className="text-sm font-medium text-red-800">Failed to Add</p>
+                    <p className="text-2xl font-bold text-red-600">{uploadResults.details.unaddedReferenceNumbers.length}</p>
+                  </div>
+                )}
+              </div>
+              
+              {uploadResults.details.alredyAddedReferenceNumbers.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Already existing reference numbers:</p>
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <p className="text-sm text-gray-600 font-mono">
+                      {uploadResults.details.alredyAddedReferenceNumbers.join(', ')}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {uploadResults.details.unaddedReferenceNumbers.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Failed to add reference numbers:</p>
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <p className="text-sm text-gray-600 font-mono">
+                      {uploadResults.details.unaddedReferenceNumbers.join(', ')}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

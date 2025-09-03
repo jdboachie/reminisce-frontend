@@ -19,7 +19,8 @@ import {
   Album,
   Event,
   EventStats,
-  DepartmentStatistics
+  DepartmentStatistics,
+  UploadStudentListResponse
 } from '../types';
 
 // Department API functions
@@ -166,7 +167,7 @@ export const studentAPI = {
     }
   },
 
-  async uploadStudentList(workspace: string, referenceNumbers: string[], token: string): Promise<void> {
+  async uploadStudentList(workspace: string, referenceNumbers: string[], token: string): Promise<UploadStudentListResponse> {
     const response = await authenticatedApiCall(
       `${API_CONFIG.ENDPOINTS.UPLOAD_STUDENT_LIST}/${workspace}`,
       token,
@@ -179,6 +180,8 @@ export const studentAPI = {
     if (!response.ok) {
       throw new Error(`Failed to upload student list: ${response.statusText}`);
     }
+
+    return response.json();
   },
 };
 
