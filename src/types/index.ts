@@ -196,12 +196,23 @@ export interface CreateImagePayload {
   uploadedBy: string;
 }
 
-export interface CreateReportPayload {
+export interface Report {
+  _id: string;
   title: string;
   content: string;
   workspaceName: string;
   studentName: string;
   studentEmail: string;
+  referenceNumber: string;
+  resolved: boolean;
+  createdAt: Date;
+}
+
+export interface CreateReportPayload {
+  title: string;
+  content: string;
+  referenceNumber: string;
+  workspaceName: string;
 }
 
 export interface CreateAlbumPayload {

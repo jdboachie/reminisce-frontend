@@ -51,7 +51,8 @@ export const API_CONFIG = {
     CREATE_REPORT: '/report',
     GET_REPORTS: '/report',
     GET_REPORT_BY_ID: '/report',
-    CLOSE_REPORT: '/report',
+    TOGGLE_REPORT_STATUS: '/report',
+    DELETE_REPORT: '/report',
   },
   
   // Mock API endpoints (removed since we're using real backend)

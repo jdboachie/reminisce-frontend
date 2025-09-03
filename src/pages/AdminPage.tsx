@@ -16,7 +16,7 @@ import { Dashboard } from '@/components/DashBoard';
 import UsersManagement from '../components/UsersManagement';
 import { EventsManagement } from '../components/EventsManagement';
 import AlbumsManagement from '../components/AlbumsManagement';
-import DepartmentManagement from '../components/DepartmentManagement';
+// import DepartmentManagement from '../components/DepartmentManagement';
 import { Reports } from '../components/Reports';
 import { Notification } from '@/components/ui';
 import AdminAuth from '../components/AdminAuth';
@@ -79,7 +79,7 @@ const AdminPanel: React.FC = () => {
     { id: 'users', label: 'Users', icon: Users },
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'albums', label: 'Albums', icon: ImageIcon },
-    { id: 'department', label: 'Departments', icon: Building },
+    // { id: 'department', label: 'Departments', icon: Building },
     { id: 'reports', label: 'Reports', icon: FileText },
   ];
 
@@ -95,10 +95,10 @@ const AdminPanel: React.FC = () => {
           return <EventsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'albums':
         return <AlbumsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
-      case 'department':
-        return <DepartmentManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
+      // case 'department':
+      //   return <DepartmentManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'reports':
-        return <Reports users={users} events={events} albums={albums} />;
+        return <Reports adminToken={adminToken} departmentInfo={departmentInfo} />;
       default:
         return <Dashboard departmentSlug={departmentInfo?.slug || ''} adminToken={adminToken} />;
     }
