@@ -94,7 +94,7 @@ const AdminPanel: React.FC = () => {
               case 'events':
           return <EventsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'albums':
-        return <AlbumsManagement adminToken={adminToken} />;
+        return <AlbumsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'department':
         return <DepartmentManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'reports':

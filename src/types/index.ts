@@ -206,7 +206,7 @@ export interface CreateReportPayload {
 
 export interface CreateAlbumPayload {
   albumName: string;
-  workspaceName: string;
+  department: string;
 }
 
 export interface CreateEventPayload {
