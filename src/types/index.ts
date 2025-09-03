@@ -244,3 +244,17 @@ export interface EventStats {
   completed: number;
   cancelled: number;
 }
+
+export interface DepartmentStatistics {
+  department: {
+    name: string;
+    code: string;
+    slug: string;
+  };
+  statistics: {
+    totalUsers: number;
+    activeEvents: number;
+    totalAlbums: number;
+    totalImages: number;
+  };
+}

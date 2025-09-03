@@ -2,17 +2,28 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Calendar, ImageIcon, Eye, UserPlus } from 'lucide-react';
 import { StatCard } from './ui';
-import { DepartmentStatistics } from '../types';
-import { departmentAPI } from '../utils/api';
+import { API_CONFIG, authenticatedApiCall } from '@/config/api';
 
 interface DashboardProps {
   departmentSlug: string;
   adminToken: string;
 }
 
+interface DashboardStats {
+  totalUsers: number;
+  activeEvents: number;
+  totalAlbums: number;
+  totalImages: number;
+}
+
 export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken }) => {
   
-  const [statistics, setStatistics] = useState<DepartmentStatistics | null>(null);
+  const [statistics, setStatistics] = useState<DashboardStats>({
+    totalUsers: 0,
+    activeEvents: 0,
+    totalAlbums: 0,
+    totalImages: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,8 +49,75 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
           return;
         }
 
-        const stats = await departmentAPI.getDepartmentStatistics(departmentSlug, adminToken);
-        setStatistics(stats);
+        // Fetch data the same way other components do
+        
+        // Get students count (onboarded reference numbers)
+        const studentsResponse = await authenticatedApiCall(
+          API_CONFIG.ENDPOINTS.GET_STUDENTS_BY_WORKSPACE,
+          adminToken,
+          { method: 'GET' }
+        );
+        
+        // Get events count
+        const eventsResponse = await authenticatedApiCall(
+          API_CONFIG.ENDPOINTS.GET_EVENTS,
+          adminToken,
+          { method: 'GET' }
+        );
+        
+        // Get albums count
+        const albumsResponse = await authenticatedApiCall(
+          `${API_CONFIG.ENDPOINTS.GET_ALBUMS}/${departmentSlug}`,
+          adminToken,
+          { method: 'GET' }
+        );
+
+        // Process students count
+        let totalUsers = 0;
+        if (studentsResponse.ok) {
+          const studentsData = await studentsResponse.json();
+          // Students API returns array directly
+          totalUsers = studentsData.filter((student: any) => 
+            student.workspace === departmentSlug
+          ).length;
+        }
+
+        // Process events count
+        let activeEvents = 0;
+        if (eventsResponse.ok) {
+          const eventsResult = await eventsResponse.json();
+          if (eventsResult.success && eventsResult.data && eventsResult.data.events) {
+            // Filter active events (ongoing + upcoming) by department
+            activeEvents = eventsResult.data.events.filter((event: any) => 
+              event.department === departmentSlug && 
+              ['ongoing', 'upcoming'].includes(event.status)
+            ).length;
+          }
+        }
+
+        // Process albums count
+        let totalAlbums = 0;
+        let totalImages = 0;
+        if (albumsResponse.ok) {
+          const albumsResult = await albumsResponse.json();
+          if (albumsResult.success && albumsResult.data) {
+            totalAlbums = albumsResult.data.length;
+            // Calculate total images from albums
+            totalImages = albumsResult.data.reduce((sum: number, album: any) => 
+              sum + (album.imageCount || 0), 0
+            );
+          }
+        }
+
+        const newStats = {
+          totalUsers,
+          activeEvents,
+          totalAlbums,
+          totalImages
+        };
+
+        setStatistics(newStats);
+        
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch statistics';
         setError(errorMessage);
@@ -89,31 +167,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
     );
   }
 
-  if (!statistics) {
-    return (
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-800 mb-6">Dashboard Overview</h2>
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-            <p className="text-gray-600">No statistics available</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const stats = [
-    { label: 'Total Users', value: statistics.statistics.totalUsers, icon: Users, color: 'from-blue-400 to-blue-600' },
-    { label: 'Active Events', value: statistics.statistics.activeEvents, icon: Calendar, color: 'from-green-400 to-green-600' },
-    { label: 'Albums', value: statistics.statistics.totalAlbums, icon: ImageIcon, color: 'from-purple-400 to-purple-600' },
-    { label: 'Total Images', value: statistics.statistics.totalImages, icon: Eye, color: 'from-pink-400 to-pink-600' }
+    { label: 'Total Users', value: statistics.totalUsers, icon: Users, color: 'from-blue-400 to-blue-600' },
+    { label: 'Active Events', value: statistics.activeEvents, icon: Calendar, color: 'from-green-400 to-green-600' },
+    { label: 'Albums', value: statistics.totalAlbums, icon: ImageIcon, color: 'from-purple-400 to-purple-600' },
+    { label: 'Total Images', value: statistics.totalImages, icon: Eye, color: 'from-pink-400 to-pink-600' }
   ];
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-semibold text-slate-800 mb-6">
-          Dashboard Overview - {statistics.department.name}
+          Dashboard Overview - {departmentSlug}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
@@ -131,7 +196,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
               <UserPlus className="h-4 w-4 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-slate-800">Department: {statistics.department.name} ({statistics.department.code})</p>
+              <p className="text-sm text-slate-800">Department: {departmentSlug}</p>
               <p className="text-xs text-slate-500">Statistics updated</p>
             </div>
           </div>
@@ -140,7 +205,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
               <Calendar className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-slate-800">Total Users: {statistics.statistics.totalUsers}</p>
+              <p className="text-sm text-slate-800">Total Users: {statistics.totalUsers}</p>
               <p className="text-xs text-slate-500">Active students in department</p>
             </div>
           </div>
