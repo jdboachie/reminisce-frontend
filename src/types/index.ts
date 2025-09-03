@@ -153,12 +153,7 @@ export interface CreateDepartmentPayload {
 }
 
 export interface CreateStudentPayload {
-  name: string;
-  nickname: string;
-  image: string;
   referenceNumber: string;
-  phoneNumber: string;
-  quote: string;
   workspace: string;
 }
 

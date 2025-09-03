@@ -27,13 +27,8 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
   
   // Form state
   const [formData, setFormData] = useState<CreateStudentPayload>({
-    name: '', 
-    nickname: '',
-    image: '',
     referenceNumber: '',
-    phoneNumber: '',
-    quote: '',
-    workspace: ''
+    workspace: departmentInfo?.name || ''
   });
   const [uploadData, setUploadData] = useState({
     workspace: '',
@@ -95,13 +90,8 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
       
       // Reset form
       setFormData({
-        name: '',
-        nickname: '',
-        image: '',
         referenceNumber: '',
-        phoneNumber: '',
-        quote: '',
-        workspace: ''
+        workspace: departmentInfo?.name || ''
       });
       setShowCreateForm(false);
       
@@ -146,12 +136,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
   const handleEdit = (student: Student) => {
     setEditingStudent(student);
     setFormData({
-      name: student.name,
-      nickname: student.nickname,
-      image: student.image,
       referenceNumber: student.referenceNumber,
-      phoneNumber: student.phoneNumber,
-      quote: student.quote,
       workspace: student.workspace
     });
     setShowCreateForm(true);
@@ -169,12 +154,22 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
     }
   };
 
+
+
   const filteredStudents = students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesWorkspace = selectedWorkspace === 'all' || student.workspace === selectedWorkspace;
+    const search = searchTerm.trim();
+  
+    // make sure referenceNumber is always a string
+    const referenceNumber = String(student.referenceNumber || "");
+  
+    const matchesSearch = referenceNumber.includes(search);
+  
+    const matchesWorkspace =
+      selectedWorkspace === "all" || student.workspace === selectedWorkspace;
+  
     return matchesSearch && matchesWorkspace;
   });
+  
 
   if (!adminToken) {
     return (
@@ -256,32 +251,12 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
             {editingStudent ? 'Edit Student' : 'Add New Student'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> The workspace/department is automatically set to <span className="font-semibold">{departmentInfo?.name || 'Current Department'}</span> based on your admin account.
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-        </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nickname
-                </label>
-                <input
-                  type="text"
-                  value={formData.nickname}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Reference Number *
@@ -290,60 +265,24 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
                   type="text"
                   value={formData.referenceNumber}
                   onChange={(e) => setFormData(prev => ({ ...prev, referenceNumber: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
                   required
                 />
-            </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-          </div>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Workspace *
+                  Workspace
                 </label>
                 <input
                   type="text"
                   value={formData.workspace}
-                  onChange={(e) => setFormData(prev => ({ ...prev, workspace: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                  disabled
+                  title="Automatically set to current department"
                 />
-                          </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Image URL
-                </label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                        </div>
-                      </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quote
-              </label>
-              <textarea
-                value={formData.quote}
-                onChange={(e) => setFormData(prev => ({ ...prev, quote: e.target.value }))}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter a memorable quote..."
-              />
+                <p className="text-xs text-gray-500 mt-1">Automatically set to: {departmentInfo?.name || 'Current Department'}</p>
+              </div>
             </div>
             
             {error && (
@@ -364,13 +303,8 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
                   setShowCreateForm(false);
                   setEditingStudent(null);
                   setFormData({
-                    name: '',
-                    nickname: '',
-                    image: '',
                     referenceNumber: '',
-                    phoneNumber: '',
-                    quote: '',
-                    workspace: ''
+                    workspace: departmentInfo?.name || ''
                   });
                   setError(null);
                 }}
@@ -390,16 +324,16 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
           <form onSubmit={handleUpload} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Workspace *
+                Workspace
               </label>
               <input
                 type="text"
                 value={uploadData.workspace}
-                onChange={(e) => setUploadData(prev => ({ ...prev, workspace: e.target.value }))}
-                placeholder="e.g., computer-science"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                disabled
+                title="Automatically set to current department"
+              />
+              <p className="text-xs text-gray-500 mt-1">Automatically set to: {departmentInfo?.name || 'Current Department'}</p>
             </div>
             
             <div>
