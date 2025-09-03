@@ -46,28 +46,20 @@ const AdminPanel: React.FC = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    console.log('🔍 AdminPage useEffect - Token from localStorage:', token);
-    console.log('🔍 AdminPage useEffect - Token length:', token?.length);
-    
     if (token) {
       setAdminToken(token);
       setIsAuthenticated(true);
       
       // Load department info from localStorage
       const storedDepartmentInfo = localStorage.getItem('departmentInfo');
-      console.log('🔍 AdminPage useEffect - Department info from localStorage:', storedDepartmentInfo);
-      
       if (storedDepartmentInfo) {
         try {
           const deptInfo = JSON.parse(storedDepartmentInfo);
-          console.log('🔍 AdminPage useEffect - Parsed department info:', deptInfo);
           setDepartmentInfo(deptInfo);
         } catch (err) {
           console.error('Error parsing department info:', err);
         }
       }
-    } else {
-      console.log('🔍 AdminPage useEffect - No token found in localStorage');
     }
   }, [setDepartmentInfo]);
 

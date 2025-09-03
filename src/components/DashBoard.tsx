@@ -11,7 +11,6 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken }) => {
-  console.log('🔍 Dashboard component rendered with props:', { departmentSlug, adminToken, hasToken: !!adminToken });
   
   const [statistics, setStatistics] = useState<DepartmentStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,13 +38,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
           return;
         }
 
-        console.log('🔍 Dashboard: Calling API...');
         const stats = await departmentAPI.getDepartmentStatistics(departmentSlug, adminToken);
-        console.log('🔍 Dashboard: Statistics received:', stats);
         setStatistics(stats);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch statistics';
-        console.error('🔍 Dashboard: Error fetching statistics:', err);
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -55,8 +51,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
     if (departmentSlug && adminToken) {
       fetchStatistics();
     } else {
-      console.log('🔍 Dashboard: Missing required props:', { departmentSlug, hasToken: !!adminToken });
-      setLoading(false);
+      setLoading(false)
     }
   }, [departmentSlug, adminToken]);
 

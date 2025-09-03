@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Users, Edit, Trash2, Upload, Download, Search, Filter } from 'lucide-react';
+import { Plus, Users, Trash2, Upload, Search } from 'lucide-react';
 import { studentAPI } from '../utils';
 import { Student, CreateStudentPayload, UpdateStudentPayload } from '../types';
 
@@ -22,8 +22,6 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
-  const [workspaces, setWorkspaces] = useState<string[]>([]);
   
   // Form state
   const [formData, setFormData] = useState<CreateStudentPayload>({
@@ -54,12 +52,14 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
   const loadStudents = async () => {
     try {
       setLoading(true);
-      const data = await studentAPI.getStudentsByWorkspace(selectedWorkspace);
-      setStudents(data);
-      
-      // Extract unique workspaces - Fixed TypeScript issue
-      const uniqueWorkspaces = Array.from(new Set(data.map(student => student.workspace)));
-      setWorkspaces(uniqueWorkspaces);
+      // Only load students from the current workspace
+      const currentWorkspace = departmentInfo?.name || '';
+      if (currentWorkspace) {
+        const data = await studentAPI.getStudentsByWorkspace(currentWorkspace);
+        setStudents(data);
+      } else {
+        setStudents([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load students');
     } finally {
@@ -143,7 +143,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
   };
 
   const handleDelete = async (student: Student) => {
-    if (!adminToken || !confirm(`Are you sure you want to delete ${student.name}?`)) return;
+    if (!adminToken || !confirm(`Are you sure you want to delete student with reference number ${student.referenceNumber}?`)) return;
 
     try {
       await studentAPI.deleteStudent(student.referenceNumber, adminToken);
@@ -162,12 +162,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
     // make sure referenceNumber is always a string
     const referenceNumber = String(student.referenceNumber || "");
   
-    const matchesSearch = referenceNumber.includes(search);
-  
-    const matchesWorkspace =
-      selectedWorkspace === "all" || student.workspace === selectedWorkspace;
-  
-    return matchesSearch && matchesWorkspace;
+    return referenceNumber.includes(search);
   });
   
 
@@ -213,34 +208,17 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search */}
       <div className="bg-white rounded-lg shadow-md p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name or reference number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Filter className="h-5 w-5 text-gray-400" />
-            <select
-              value={selectedWorkspace}
-              onChange={(e) => setSelectedWorkspace(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Workspaces</option>
-              {workspaces.map(workspace => (
-                <option key={workspace} value={workspace}>{workspace}</option>
-              ))}
-            </select>
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by reference number..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
       </div>
 
@@ -398,48 +376,35 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredStudents.map((student) => (
-              <div key={student._id} className="p-6">
+              <div key={student._id} className="p-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={student.image || '/default-avatar.png'}
-                      alt={student.name}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-blue-600 font-medium text-sm">
+                        {String(student.referenceNumber).charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                     <div>
-                      <h4 className="text-lg font-medium text-gray-900">{student.name}</h4>
-                      <p className="text-sm text-gray-600">{student.nickname}</p>
-                      <p className="text-sm text-gray-500">Ref: {student.referenceNumber}</p>
-                      <p className="text-xs text-gray-400">Workspace: {student.workspace}</p>
-                      {student.quote && (
-                        <p className="text-sm text-gray-700 mt-1 italic">"{student.quote}"</p>
-                      )}
+                      <p className="text-lg font-medium text-gray-900">
+                        {student.referenceNumber}
+                      </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleEdit(student)}
-                      className="p-2 text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                      title="Edit student"
-                    >
-                      <Edit className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(student)}
-                      className="p-2 text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
-                      title="Delete student"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleDelete(student)}
+                    className="p-2 text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                    title="Delete student"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
-        </div>
-        </div>
+      </div>
+      </div>
   );
 };
 
