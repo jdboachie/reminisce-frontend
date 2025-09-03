@@ -98,7 +98,7 @@ const AdminPanel: React.FC = () => {
       case 'dashboard':
         return <Dashboard departmentSlug={departmentInfo?.slug || ''} adminToken={adminToken} />;
       case 'users':
-        return <UsersManagement adminToken={adminToken} />;
+        return <UsersManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'events':
         return <EventsManagement />;
       case 'albums':

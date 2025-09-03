@@ -7,9 +7,14 @@ import { Student, CreateStudentPayload, UpdateStudentPayload } from '../types';
 
 interface UsersManagementProps {
   adminToken?: string;
+  departmentInfo?: {
+    name: string;
+    code: string;
+    slug: string;
+  };
 }
 
-const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken }) => {
+const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmentInfo }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +27,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken }) => {
   
   // Form state
   const [formData, setFormData] = useState<CreateStudentPayload>({
-    name: '',
+    name: '', 
     nickname: '',
     image: '',
     referenceNumber: '',
@@ -42,10 +47,19 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken }) => {
     }
   }, [adminToken]);
 
+  // Update workspace fields when department info changes
+  useEffect(() => {
+    if (departmentInfo?.name) {
+      console.log('🔍 UsersManagement: Setting workspace to department:', departmentInfo.name);
+      setFormData(prev => ({ ...prev, workspace: departmentInfo.name }));
+      setUploadData(prev => ({ ...prev, workspace: departmentInfo.name }));
+    }
+  }, [departmentInfo]);
+
   const loadStudents = async () => {
     try {
       setLoading(true);
-      const data = await studentAPI.getAllStudents();
+      const data = await studentAPI.getStudentsByWorkspace(selectedWorkspace);
       setStudents(data);
       
       // Extract unique workspaces - Fixed TypeScript issue
