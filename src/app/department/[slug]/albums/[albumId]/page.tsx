@@ -88,7 +88,7 @@ export default function AlbumDetailPage() {
           
           // Fetch images for this album after album is loaded
           console.log('🔍 Frontend - Fetching images for album ID:', albumData._id);
-          const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/getimages/${albumData._id}`);
+          const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/getimages/${albumData._id}`);
           if (imagesResponse.ok) {
             const imagesResult = await imagesResponse.json();
             if (imagesResult.success && imagesResult.data) {
@@ -128,7 +128,7 @@ export default function AlbumDetailPage() {
     if (!album?._id) return;
     
     try {
-      const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/getimages/${album._id}`);
+      const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/getimages/${album._id}`);
       if (imagesResponse.ok) {
         const imagesResult = await imagesResponse.json();
         if (imagesResult.success && imagesResult.data) {
@@ -447,7 +447,7 @@ export default function AlbumDetailPage() {
                   <div className="p-4">
                     <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
                       <span className="font-poppins">
-                        Uploaded by {image.uploadedBy}
+                        {new Date(image.createdAt).toLocaleTimeString()}
                       </span>
                       <span className="font-poppins">
                         {new Date(image.createdAt).toLocaleDateString()}
