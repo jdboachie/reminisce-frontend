@@ -84,7 +84,16 @@ export const getDepartmentAlbums = async () => {
 // Get students for the current department using workspace ID
 export const getDepartmentStudents = async () => {
   const departmentInfo = getDepartmentInfo();
-  if (!departmentInfo) throw new Error('Department information not found');
+  
+  if (!departmentInfo) {
+    throw new Error('Department information not found');
+  }
+  
+  if (!departmentInfo.workspace) {
+    throw new Error('Department workspace not found');
+  }
+  
+  
   
   // Use workspace ID in request body for filtering
   const response = await fetch(`${API_CONFIG.BASE_URL}/student/public`, {
@@ -92,6 +101,12 @@ export const getDepartmentStudents = async () => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ workspace: departmentInfo.workspace })
   });
+  
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+  }
+  
   return response;
 };
 
@@ -131,4 +146,91 @@ export const updateStudentProfile = async (profileData: {
       departmentSlug: departmentInfo.slug
     })
   });
+};
+
+// Save department information to localStorage
+export const saveDepartmentInfo = (departmentInfo: DepartmentInfo): void => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem('departmentInfo', JSON.stringify(departmentInfo));
+  } catch (error) {
+  }
+};
+
+// Fetch department information by slug from the backend
+export const fetchDepartmentBySlug = async (slug: string): Promise<DepartmentInfo | null> => {
+  try {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/department/${slug}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch department by slug:', response.status, response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('Department data fetched:', data);
+    
+    // The backend returns the department object directly, not wrapped in success/data
+    if (data && data._id && data.slug) {
+      // Add the workspace field (use _id as workspace)
+      const departmentInfo: DepartmentInfo = {
+        _id: data._id,
+        name: data.name,
+        code: data.code,
+        slug: data.slug,
+        workspace: data._id // Use department ID as workspace
+      };
+      return departmentInfo;
+    } else {
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Ensure department information is available, fetch if missing
+export const ensureDepartmentInfo = async (slug?: string): Promise<DepartmentInfo | null> => {
+  
+  // First, try to get from localStorage
+  let departmentInfo = getDepartmentInfo();
+  
+  if (departmentInfo && slug) {
+    if (departmentInfo.slug === slug) {
+      if (departmentInfo.workspace) {
+        return departmentInfo;
+      } else {
+        localStorage.removeItem('departmentInfo');
+        departmentInfo = null;
+      }
+    } else {
+      localStorage.removeItem('departmentInfo');
+      departmentInfo = null;
+    }
+  } else if (departmentInfo && !slug) {
+    if (departmentInfo.workspace) {
+      return departmentInfo;
+    } else {
+      localStorage.removeItem('departmentInfo');
+      departmentInfo = null;
+    }
+  }
+  
+  if (slug) {
+    departmentInfo = await fetchDepartmentBySlug(slug);
+    
+    if (departmentInfo) {
+      // Save to localStorage for future use
+      saveDepartmentInfo(departmentInfo);
+      return departmentInfo;
+    } else {
+    }
+  }
+  
+  return null;
 };

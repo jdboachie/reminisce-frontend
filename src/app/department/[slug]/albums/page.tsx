@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ImageIcon, ArrowLeft, Building2, Moon, User, Filter, Search, Plus, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
-import { getDepartmentAlbums, getDepartmentInfo } from '@/utils/clientApi';
+import { getDepartmentAlbums, getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
 
 interface Department {
   _id: string;
@@ -53,10 +53,10 @@ export default function DepartmentAlbumsRoute() {
       setLoading(true);
       setError(null);
 
-      // Get department info from localStorage (set by landing page)
-      const departmentInfo = getDepartmentInfo();
+      // Ensure department info is available (fetch if missing)
+      const departmentInfo = await ensureDepartmentInfo(departmentSlug);
       if (!departmentInfo) {
-        throw new Error('Department information not found. Please select a department first.');
+        throw new Error('Unable to load department information. Please go to the home page and select your department.');
       }
       
       setDepartment(departmentInfo);

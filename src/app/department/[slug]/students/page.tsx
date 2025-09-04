@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { User, ArrowLeft, Moon, Plus, Search, Filter, Mail, Phone, Quote, UserCheck, AlertCircle } from 'lucide-react';
-import { getDepartmentStudents, getDepartmentInfo, updateStudentProfile } from '@/utils/clientApi';
+import { getDepartmentStudents, getDepartmentInfo, updateStudentProfile, ensureDepartmentInfo } from '@/utils/clientApi';
 import ImageUpload from '@/components/ImageUpload';
 import { CloudinaryUploadResult } from '@/utils/cloudinary';
 
@@ -78,10 +78,10 @@ export default function DepartmentStudentsRoute() {
       setLoading(true);
       setError(null);
 
-      // Get department info from localStorage (set by landing page)
-      const departmentInfo = getDepartmentInfo();
+      // Ensure department info is available (fetch if missing)
+      const departmentInfo = await ensureDepartmentInfo(departmentSlug);
       if (!departmentInfo) {
-        throw new Error('Department information not found. Please select a department first.');
+        throw new Error('Unable to load department information. Please go to the home page and select your department.');
       }
       
       setDepartment(departmentInfo);

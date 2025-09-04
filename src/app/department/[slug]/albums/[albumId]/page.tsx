@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, UserCheck, AlertCircle, ImageIcon, Plus, Heart, MessageCircle, Calendar, Building2, Moon, User } from 'lucide-react';
-import { getDepartmentInfo } from '@/utils/clientApi';
+import { getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
 import ImageViewer from '@/components/ImageViewer';
 
 interface Department {
@@ -79,10 +79,10 @@ export default function AlbumDetailPage() {
       setLoading(true);
       setError(null);
 
-      // Get department info from localStorage
-      const departmentInfo = getDepartmentInfo();
+      // Ensure department info is available (fetch if missing)
+      const departmentInfo = await ensureDepartmentInfo(departmentSlug);
       if (!departmentInfo) {
-        throw new Error('Department information not found. Please select a department first.');
+        throw new Error('Unable to load department information. Please go to the home page and select your department.');
       }
       
       setDepartment(departmentInfo);
@@ -292,20 +292,46 @@ export default function AlbumDetailPage() {
   }
 
   if (error || !album || !department) {
+    const isDepartmentError = error?.includes('department information') || error?.includes('Unable to load department');
+    
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="flex-grow relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-pink-50/20 to-blue-50/30 dark:from-purple-900/20 dark:via-pink-900/10 dark:to-blue-900/20 animate-watercolor-float"></div>
           <div className="relative z-10 flex items-center justify-center min-h-screen">
-            <div className="text-center">
-              <h2 className="text-3xl font-poppins font-bold text-red-600 mb-4">Error Loading Album</h2>
-              <p className="text-red-500 mb-6 font-poppins">{error || 'Album not found'}</p>
-              <button 
-                onClick={handleGoBack}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-poppins font-medium shadow-lg hover:shadow-xl"
-              >
-                Go Back
-              </button>
+            <div className="text-center max-w-md mx-auto px-6">
+              <div className="mb-6">
+                <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-3xl font-poppins font-bold text-red-600 mb-4">
+                  {isDepartmentError ? 'Department Access Required' : 'Error Loading Album'}
+                </h2>
+                <p className="text-red-500 mb-4 font-poppins">
+                  {error || 'Album not found'}
+                </p>
+                {isDepartmentError && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                    <p className="text-blue-800 dark:text-blue-200 text-sm font-poppins">
+                      <strong>Direct Link Access:</strong> You've accessed this page directly. 
+                      To view this album, please go to the home page and select your department first.
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button 
+                  onClick={handleGoHome}
+                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-poppins font-medium shadow-lg hover:shadow-xl"
+                >
+                  Go to Home Page
+                </button>
+                <button 
+                  onClick={handleGoBack}
+                  className="px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors font-poppins font-medium shadow-lg hover:shadow-xl"
+                >
+                  Go Back to Albums
+                </button>
+              </div>
             </div>
           </div>
         </div>

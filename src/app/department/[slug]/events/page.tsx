@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Calendar, ArrowLeft, Building2, Moon, User, Filter, Grid, List, MapPin, Users, Clock } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
-import { getDepartmentEvents, getDepartmentInfo } from '@/utils/clientApi';
+import { getDepartmentEvents, getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
 
 interface Department {
   _id: string;
@@ -50,10 +50,10 @@ export default function DepartmentEventsRoute() {
       setLoading(true);
       setError(null);
 
-      // Get department info from localStorage (set by landing page)
-      const departmentInfo = getDepartmentInfo();
+      // Ensure department info is available (fetch if missing)
+      const departmentInfo = await ensureDepartmentInfo(departmentSlug);
       if (!departmentInfo) {
-        throw new Error('Department information not found. Please select a department first.');
+        throw new Error('Unable to load department information. Please go to the home page and select your department.');
       }
       
       setDepartment(departmentInfo);

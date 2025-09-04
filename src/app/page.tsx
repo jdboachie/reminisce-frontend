@@ -19,6 +19,7 @@ import {
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_CONFIG } from '@/config/api';
+import { saveDepartmentInfo, DepartmentInfo } from '@/utils/clientApi';
 
 // Helper function to get icon color from gradient
 const getIconColor = (gradient: string) => {
@@ -119,7 +120,7 @@ const HomePage: React.FC = () => {
       
       if (department) {
         // Store department information for client-side requests
-        const departmentInfo = {
+        const departmentInfo: DepartmentInfo = {
           _id: department._id,
           name: department.name,
           code: department.code,
@@ -127,8 +128,8 @@ const HomePage: React.FC = () => {
           workspace: department._id // Use department ID as workspace
         };
         
-        // Store in localStorage for client-side requests
-        localStorage.setItem('departmentInfo', JSON.stringify(departmentInfo));
+        // Store in localStorage using the centralized function
+        saveDepartmentInfo(departmentInfo);
         
         console.log('Department found and stored:', departmentInfo);
         
