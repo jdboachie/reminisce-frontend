@@ -7,6 +7,8 @@ import { Album, CreateAlbumPayload } from '../types';
 import { API_CONFIG, authenticatedApiCall } from '@/config/api';
 import { useNotification } from '../hooks/useNotification';
 import AdminAlbumDetail from './AdminAlbumDetail';
+import ImageUpload from './ImageUpload';
+import { CloudinaryUploadResult } from '../utils/cloudinary';
 
 interface AlbumsManagementProps {
   adminToken?: string;
@@ -29,6 +31,8 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
   const [albumForm, setAlbumForm] = useState<CreateAlbumPayload>({
     albumName: ''
   });
+  const [coverImage, setCoverImage] = useState<string>('');
+  const [imageUploading, setImageUploading] = useState(false);
   
   useEffect(() => {
     if (adminToken) {
@@ -89,6 +93,13 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
     setAlbumForm({
       albumName: ''
     });
+    setCoverImage('');
+  };
+
+  const handleImageUpload = async (uploadResults: CloudinaryUploadResult[]) => {
+    if (uploadResults.length > 0) {
+      setCoverImage(uploadResults[0].secure_url);
+    }
   };
 
   const handleCreateAlbum = async (e: React.FormEvent) => {
@@ -106,7 +117,8 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
 
       // Department will be automatically set from JWT token
       const albumPayload = {
-        albumName: albumForm.albumName
+        albumName: albumForm.albumName,
+        coverImage: coverImage || undefined
       };
       
       console.log('Creating album:', albumPayload);
@@ -361,11 +373,25 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                 className="group relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1"
               >
                 {/* Album Cover */}
-                <div className="w-full h-48 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center">
-                  <div className="text-center">
-                    <FolderOpen className="h-16 w-16 text-indigo-500 mx-auto mb-2" />
-                    <div className="text-indigo-700 font-semibold text-lg">{album.albumName}</div>
-              </div>
+                <div className="w-full h-48 relative overflow-hidden">
+                  {album.coverImage ? (
+                    <img
+                      src={album.coverImage}
+                      alt={`${album.albumName} cover`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={`w-full h-full bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center ${album.coverImage ? 'hidden' : ''}`}>
+                    <div className="text-center">
+                      <FolderOpen className="h-16 w-16 text-indigo-500 mx-auto mb-2" />
+                      <div className="text-indigo-700 font-semibold text-lg">{album.albumName}</div>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Album Info */}
@@ -447,6 +473,41 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
             required
           />
           
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cover Image (Optional)
+            </label>
+            {coverImage ? (
+              <div className="space-y-3">
+                <div className="relative w-32 h-32 mx-auto">
+                  <img
+                    src={coverImage}
+                    alt="Album cover preview"
+                    className="w-full h-full object-cover rounded-xl border-2 border-gray-200"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCoverImage('')}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Remove Cover Image
+                </button>
+              </div>
+            ) : (
+              <ImageUpload
+                onUpload={handleImageUpload}
+                onError={(error) => setError(error)}
+                multiple={false}
+                maxFiles={1}
+                disabled={submitting}
+              />
+            )}
+          </div>
           
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
             <p className="text-sm text-blue-700">

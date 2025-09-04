@@ -42,6 +42,7 @@ export interface UpdateEventPayload {
 export interface Album {
   _id: string;
   albumName: string;
+  coverImage?: string;
   workspaceName: string;
   departmentId: string;
   isActive: boolean;
@@ -51,6 +52,7 @@ export interface Album {
 
 export interface CreateAlbumPayload {
   albumName: string;
+  coverImage?: string;
 }
 
 export interface DepartmentInfo {

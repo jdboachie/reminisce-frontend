@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, UserCheck, AlertCircle, ImageIcon, Plus, Heart, MessageCircle, Calendar, Building2, Moon, User } from 'lucide-react';
 import { getDepartmentInfo } from '@/utils/clientApi';
+import ImageViewer from '@/components/ImageViewer';
 
 interface Department {
   _id: string;
@@ -27,10 +28,15 @@ interface Album {
 interface AlbumImage {
   _id: string;
   albumName: string;
+  albumId: string;
   pictureURL: string;
   uploadedBy: string;
+  referenceNumber?: string;
+  departmentId: string;
+  workspace: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export default function AlbumDetailPage() {
@@ -57,6 +63,10 @@ export default function AlbumDetailPage() {
   const [imageUrl, setImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Image viewer modal
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (departmentSlug && albumId) {
@@ -252,6 +262,19 @@ export default function AlbumDetailPage() {
     }
   };
 
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setShowImageViewer(true);
+  };
+
+  const handleImageViewerClose = () => {
+    setShowImageViewer(false);
+  };
+
+  const handleImageNavigate = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -424,34 +447,59 @@ export default function AlbumDetailPage() {
                   key={image._id} 
                   className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transform transition-all duration-500 hover:scale-105 border border-slate-200 dark:border-slate-700"
                   style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => handleImageClick(index)}
                 >
                   <div className="relative overflow-hidden">
                     <img
                       src={image.pictureURL}
                       alt={`Photo ${index + 1}`}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                       onError={(e) => e.currentTarget.src = `https://placehold.co/400x400/e2e8f0/64748b?text=Image+${index + 1}`}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
-                        <button className="p-2 bg-white rounded-full text-slate-600 hover:text-red-500 transition-colors">
+                        <button 
+                          className="p-2 bg-white rounded-full text-slate-600 hover:text-red-500 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Add like functionality here if needed
+                          }}
+                        >
                           <Heart className="h-4 w-4" />
                         </button>
-                        <button className="p-2 bg-white rounded-full text-slate-600 hover:text-blue-500 transition-colors">
+                        <button 
+                          className="p-2 bg-white rounded-full text-slate-600 hover:text-blue-500 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Add comment functionality here if needed
+                          }}
+                        >
                           <MessageCircle className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
+                    
+                    {/* Click to view overlay */}
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="p-2 bg-black bg-opacity-50 rounded-full text-white">
+                        <ImageIcon className="h-4 w-4" />
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="p-4">
-                    <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                      <span className="font-poppins">
+                  <div className="p-5">
+                    <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-2">
+                      <span className="font-poppins flex items-center">
+                        <User className="h-4 w-4 mr-1" />
                         {new Date(image.createdAt).toLocaleTimeString()}
                       </span>
-                      <span className="font-poppins">
+                      <span className="font-poppins flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" />
                         {new Date(image.createdAt).toLocaleDateString()}
                       </span>
+                    </div>
+                    <div className="text-xs text-slate-400 dark:text-slate-500">
+                      Click to view full size
                     </div>
                   </div>
                 </div>
@@ -579,6 +627,15 @@ export default function AlbumDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Image Viewer Modal */}
+      <ImageViewer
+        images={images}
+        currentIndex={currentImageIndex}
+        isOpen={showImageViewer}
+        onClose={handleImageViewerClose}
+        onNavigate={handleImageNavigate}
+      />
     </div>
   );
 }

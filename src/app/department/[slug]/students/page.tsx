@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { User, ArrowLeft, Moon, Plus, Search, Filter, Mail, Phone, Quote, UserCheck, AlertCircle } from 'lucide-react';
 import { getDepartmentStudents, getDepartmentInfo, updateStudentProfile } from '@/utils/clientApi';
+import ImageUpload from '@/components/ImageUpload';
+import { CloudinaryUploadResult } from '@/utils/cloudinary';
 
 interface Department {
   _id: string;
@@ -63,6 +65,7 @@ export default function DepartmentStudentsRoute() {
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   useEffect(() => {
     if (departmentSlug) {
@@ -156,6 +159,15 @@ export default function DepartmentStudentsRoute() {
       setRefError('Failed to verify reference number. Please try again.');
     } finally {
       setRefVerifying(false);
+    }
+  };
+
+  const handleImageUpload = async (uploadResults: CloudinaryUploadResult[]) => {
+    if (uploadResults.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        image: uploadResults[0].secure_url
+      }));
     }
   };
 
@@ -564,19 +576,41 @@ export default function DepartmentStudentsRoute() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Profile Image URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.image}
-                    onChange={(e) => setFormData({...formData, image: e.target.value})}
-                    placeholder="Enter image URL"
-                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
-                    required
+                              <div>
+                <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Profile Image *
+                </label>
+                {formData.image ? (
+                  <div className="space-y-3">
+                    <div className="relative w-32 h-32 mx-auto">
+                      <img
+                        src={formData.image}
+                        alt="Profile preview"
+                        className="w-full h-full object-cover rounded-xl border-2 border-slate-200 dark:border-slate-600"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                      className="text-sm text-red-600 hover:text-red-700 font-poppins"
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                ) : (
+                  <ImageUpload
+                    onUpload={handleImageUpload}
+                    onError={(error) => setFormError(error)}
+                    multiple={false}
+                    maxFiles={1}
+                    disabled={formSubmitting}
                   />
-                </div>
+                )}
+              </div>
               </div>
 
               <div>
