@@ -18,7 +18,6 @@ export default function DepartmentHomeRoute() {
   const params = useParams();
   const router = useRouter();
   const departmentSlug = params?.slug as string;
-  
   const [department, setDepartment] = useState<Department | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
