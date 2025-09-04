@@ -112,3 +112,23 @@ export const createDepartmentReport = async (reportData: {
     })
   });
 };
+
+export const updateStudentProfile = async (profileData: {
+  referenceNumber: string;
+  name: string;
+  nickname: string;
+  image: string;
+  phoneNumber: string;
+  quote: string;
+}) => {
+  const departmentInfo = getDepartmentInfo();
+  if (!departmentInfo) throw new Error('Department information not found');
+  
+  return clientApiCall('/student/update-profile', {
+    method: 'PUT',
+    body: JSON.stringify({
+      ...profileData,
+      departmentSlug: departmentInfo.slug
+    })
+  });
+};

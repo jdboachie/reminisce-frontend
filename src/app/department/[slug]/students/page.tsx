@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Users, ArrowLeft, Building2, Moon, User, Search, Grid, List, Quote, Mail, MapPin } from 'lucide-react';
-import { API_CONFIG } from '@/config/api';
-import { getDepartmentStudents, getDepartmentInfo } from '@/utils/clientApi';
+import { User, ArrowLeft, Moon, Plus, Search, Filter, Mail, Phone, Quote, UserCheck, AlertCircle } from 'lucide-react';
+import { getDepartmentStudents, getDepartmentInfo, updateStudentProfile } from '@/utils/clientApi';
 
 interface Department {
   _id: string;
@@ -17,11 +16,23 @@ interface Department {
 interface Student {
   _id: string;
   name: string;
-  nickname?: string;
-  image?: string;
-  quote?: string;
+  nickname: string;
+  image: string;
   referenceNumber: string;
+  phoneNumber: string;
+  quote: string;
   workspace: string;
+  departmentId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface StudentFormData {
+  name: string;
+  nickname: string;
+  image: string;
+  phoneNumber: string;
+  quote: string;
 }
 
 export default function DepartmentStudentsRoute() {
@@ -33,9 +44,25 @@ export default function DepartmentStudentsRoute() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Reference number verification modal
+  const [showRefModal, setShowRefModal] = useState(false);
+  const [refNumber, setRefNumber] = useState('');
+  const [refVerifying, setRefVerifying] = useState(false);
+  const [refError, setRefError] = useState<string | null>(null);
+  
+  // Student form modal
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [formData, setFormData] = useState<StudentFormData>({
+    name: '',
+    nickname: '',
+    image: '',
+    phoneNumber: '',
+    quote: ''
+  });
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (departmentSlug) {
@@ -48,28 +75,29 @@ export default function DepartmentStudentsRoute() {
       setLoading(true);
       setError(null);
 
-      // Fetch department info
-      const deptResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_DEPARTMENT_BY_SLUG}/${departmentSlug}`);
-      if (!deptResponse.ok) {
-        throw new Error('Department not found');
+      // Get department info from localStorage (set by landing page)
+      const departmentInfo = getDepartmentInfo();
+      if (!departmentInfo) {
+        throw new Error('Department information not found. Please select a department first.');
       }
-      const deptData = await deptResponse.json();
-      setDepartment(deptData);
+      
+      setDepartment(departmentInfo);
 
-      // Fetch students for this department only
-      const studentsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_STUDENTS_BY_WORKSPACE}/${departmentSlug}`);
+      // Fetch students using the department workspace
+      const studentsResponse = await getDepartmentStudents();
       if (studentsResponse.ok) {
-        const studentsData = await studentsResponse.json();
-        // Filter students by workspace (department name) and add mock data for missing fields
-        const departmentStudents = studentsData.filter((student: Student) => 
-          student.workspace === deptData.name
-        ).map((student: Student) => ({
-          ...student,
-          image: student.image || `https://placehold.co/200x200/e2e8f0/64748b?text=${encodeURIComponent(student.name?.charAt(0) || 'S')}`,
-          nickname: student.nickname || 'Student',
-          quote: student.quote || 'Learning and growing together!'
-        }));
-        setStudents(departmentStudents);
+        const studentsResult = await studentsResponse.json();
+        if (studentsResult.success && studentsResult.data) {
+          // Only show students with complete profiles (all required fields filled)
+          const completeStudents = studentsResult.data.filter((student: Student) => 
+            student.name && 
+            student.nickname && 
+            student.image && 
+            student.phoneNumber && 
+            student.quote
+          );
+          setStudents(completeStudents);
+        }
       }
 
     } catch (err) {
@@ -83,15 +111,104 @@ export default function DepartmentStudentsRoute() {
     router.push('/');
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    // You can add localStorage persistence here if needed
+  const handleAddStudent = () => {
+    setShowRefModal(true);
+    setRefNumber('');
+    setRefError(null);
   };
 
-  const filteredStudents = students.filter(student =>
-    (student.name && student.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (student.nickname && student.nickname.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (student.quote && student.quote.toLowerCase().includes(searchQuery.toLowerCase()))
+  const verifyReferenceNumber = async () => {
+    if (!refNumber.trim()) {
+      setRefError('Please enter your reference number');
+      return;
+    }
+
+    try {
+      setRefVerifying(true);
+      setRefError(null);
+
+      // Check if reference number exists in department students
+      const studentsResponse = await getDepartmentStudents();
+      if (studentsResponse.ok) {
+        const studentsResult = await studentsResponse.json();
+        if (studentsResult.success && studentsResult.data) {
+          const existingStudent = studentsResult.data.find((student: Student) => 
+            student.referenceNumber === refNumber.trim()
+          );
+
+          if (existingStudent) {
+            // Reference number found, show form
+            setFormData({
+              name: existingStudent.name || '',
+              nickname: existingStudent.nickname || '',
+              image: existingStudent.image || '',
+              phoneNumber: existingStudent.phoneNumber || '',
+              quote: existingStudent.quote || ''
+            });
+            setShowRefModal(false);
+            setShowFormModal(true);
+          } else {
+            setRefError('Reference number not found in this department. Please contact your department admin.');
+          }
+        }
+      }
+    } catch (err) {
+      setRefError('Failed to verify reference number. Please try again.');
+    } finally {
+      setRefVerifying(false);
+    }
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate all fields are filled
+    if (!formData.name.trim() || !formData.nickname.trim() || !formData.image.trim() || 
+        !formData.phoneNumber.trim() || !formData.quote.trim()) {
+      setFormError('All fields are required');
+      return;
+    }
+
+    try {
+      setFormSubmitting(true);
+      setFormError(null);
+
+      // Update student profile using client API
+      const response = await updateStudentProfile({
+        referenceNumber: refNumber,
+        ...formData
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Refresh students list
+          await fetchDepartmentData();
+          setShowFormModal(false);
+          setFormData({
+            name: '',
+            nickname: '',
+            image: '',
+            phoneNumber: '',
+            quote: ''
+          });
+        } else {
+          setFormError(result.msg || 'Failed to update profile');
+        }
+      } else {
+        setFormError('Failed to update profile. Please try again.');
+      }
+    } catch (err) {
+      setFormError('Failed to update profile. Please try again.');
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const filteredStudents = students.filter(student => 
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.nickname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.quote.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -102,7 +219,7 @@ export default function DepartmentStudentsRoute() {
           <div className="relative z-10 flex items-center justify-center min-h-screen">
             <div className="text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-lg text-slate-600 dark:text-slate-300 font-poppins">Loading department students...</p>
+              <p className="text-lg text-slate-600 dark:text-slate-300 font-poppins">Loading class members...</p>
             </div>
           </div>
         </div>
@@ -133,8 +250,8 @@ export default function DepartmentStudentsRoute() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''} bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900`}>
-      {/* Top Navigation Bar - Matching HomePage Style */}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Top Navigation Bar */}
       <div className="bg-slate-800 dark:bg-slate-900 border-b border-slate-700 dark:border-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -184,15 +301,6 @@ export default function DepartmentStudentsRoute() {
                 </svg>
                 <span>Class</span>
               </button>
-              {/* <button
-                onClick={() => router.push(`/department/${departmentSlug}/about`)}
-                className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-600 dark:hover:bg-slate-700 transition-all duration-200"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                </svg>
-                <span>Department</span>
-              </button> */}
               <button
                 onClick={() => router.push(`/department/${departmentSlug}/reports`)}
                 className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-600 dark:hover:bg-slate-700 transition-all duration-200"
@@ -206,10 +314,7 @@ export default function DepartmentStudentsRoute() {
 
             {/* Right Side Icons */}
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={toggleTheme}
-                className="p-2 text-slate-300 hover:text-white transition-colors"
-              >
+              <button className="p-2 text-slate-300 hover:text-white transition-colors">
                 <Moon className="h-5 w-5" />
               </button>
               <button className="p-2 text-slate-300 hover:text-white transition-colors">
@@ -220,172 +325,301 @@ export default function DepartmentStudentsRoute() {
         </div>
       </div>
 
-      {/* Main Content - EXACTLY matching ProfilesPage */}
+      {/* Main Content */}
       <main className="flex-grow px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header Section - EXACT ProfilesPage styling */}
+          {/* Header Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-poppins font-bold text-slate-800 dark:text-white mb-4">
-              Meet Our Class
+              Class Members
             </h1>
-            <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-8">
-              Connect with classmates and discover the amazing people in {department.name}. 
-              Every student brings unique talents, dreams, and perspectives to our class.
+            <p className="text-lg font-poppins text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+              Connect with your classmates in {department.name}. 
+              If you're a member of this class, we'd love for you to update your class info.
             </p>
           </div>
 
-          {/* Controls Section - EXACT ProfilesPage styling */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between">
+          {/* Controls Section */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
             {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative max-w-md w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
-                placeholder="Search students..."
+                placeholder="Search classmates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
 
-            {/* View Toggle */}
-            <div className="flex items-center space-x-2 bg-white dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-600">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all duration-300 ${
-                  viewMode === 'grid' 
-                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-                    : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                }`}
-              >
-                <Grid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-all duration-300 ${
-                  viewMode === 'list' 
-                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-                    : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                }`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
+            {/* Add Student Button */}
+            <button
+              onClick={handleAddStudent}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 font-poppins font-medium shadow-lg hover:shadow-xl"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Your Info</span>
+            </button>
+
+            {/* Back to Home Button */}
+            <button
+              onClick={handleGoHome}
+              className="flex items-center space-x-2 px-6 py-3 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-all duration-300 font-poppins font-medium"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Home</span>
+            </button>
           </div>
 
-          {/* Students Display - EXACT ProfilesPage styling */}
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredStudents.map((student, index) => (
-                <div 
-                  key={student._id}
-                  className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-500 hover:scale-105 animate-soft-scale border border-slate-200 dark:border-slate-700"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {/* Profile Header - EXACT ProfilesPage styling */}
-                  <div className="relative p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-                    <div className="flex items-center space-x-4">
-                      <div className="relative">
-                        <img
-                          src={student.image}
-                          alt={student.name || 'Student'}
-                          className="w-16 h-16 rounded-full object-cover border-4 border-white dark:border-slate-700 soft-shadow"
-                          onError={(e) => e.currentTarget.src = `https://placehold.co/200x200/e2e8f0/64748b?text=${encodeURIComponent(student.name?.charAt(0) || 'S')}`}
-                        />
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white dark:border-slate-700"></div>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-poppins font-semibold text-slate-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                          {student.name || 'Unknown Name'}
-                        </h3>
-                        <p className="text-sm font-poppins text-purple-600 dark:text-purple-400 font-medium">
-                          {student.nickname || 'No Nickname'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Profile Content - EXACT ProfilesPage styling */}
-                  <div className="p-6">
-                    <div className="mb-4">
-                      <div className="flex items-start space-x-2">
-                        <Quote className="h-4 w-4 text-purple-400 dark:text-purple-500 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm font-poppins text-slate-600 dark:text-slate-300 italic">
-                          &ldquo;{student.quote || 'No quote available'}&rdquo;
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="text-xs text-slate-500 dark:text-slate-400 font-poppins">
-                      Ref: {student.referenceNumber}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* List View - EXACT ProfilesPage styling */
-            <div className="space-y-4">
-              {filteredStudents.map((student, index) => (
-                <div 
-                  key={student._id}
-                  className="group cursor-pointer bg-white dark:bg-slate-800 rounded-xl overflow-hidden soft-shadow hover:soft-shadow-hover transform transition-all duration-300 hover:scale-102 animate-soft-scale border border-slate-200 dark:border-slate-700"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <div className="flex items-center p-6">
-                    <div className="relative mr-6">
-                      <img
-                        src={student.image}
-                        alt={student.name || 'Student'}
-                        className="w-16 h-16 rounded-full object-cover border-3 border-purple-100 dark:border-purple-900/30"
-                        onError={(e) => e.currentTarget.src = `https://placehold.co/200x200/e2e8f0/64748b?text=${encodeURIComponent(student.name?.charAt(0) || 'S')}`}
-                      />
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white dark:border-slate-700"></div>
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-4 mb-2">
-                        <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                          {student.name || 'Unknown Name'}
-                        </h3>
-                        <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-3 py-1 rounded-full text-sm font-poppins font-medium">
-                          {student.nickname || 'No Nickname'}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-6 text-sm text-slate-500 dark:text-slate-400 font-poppins">
-                        <div className="flex items-center space-x-1">
-                          <Quote className="h-4 w-4 text-purple-400 dark:text-purple-500" />
-                          <span className="italic">&ldquo;{student.quote || 'No quote available'}&rdquo;</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 font-poppins">
-                        Ref: {student.referenceNumber}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Empty State - EXACT ProfilesPage styling */}
-          {filteredStudents.length === 0 && (
+          {/* Students Content */}
+          {filteredStudents.length === 0 ? (
+            // Empty State
             <div className="text-center py-16">
               <div className="w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-6">
-                <Users className="h-12 w-12 text-purple-400 dark:text-purple-500" />
+                <User className="h-12 w-12 text-purple-400 dark:text-purple-500" />
               </div>
               <h3 className="text-xl font-poppins font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                No students found
+                {searchQuery ? 'No classmates found' : 'No class members yet'}
               </h3>
               <p className="text-slate-500 dark:text-slate-400 font-poppins">
-                Try adjusting your search criteria or check back later for students in {department.name}
+                {searchQuery 
+                  ? 'Try adjusting your search criteria'
+                  : `Be the first to add your information to the ${department.name} class page`
+                }
               </p>
+            </div>
+          ) : (
+            // Students Grid
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredStudents.map((student, index) => (
+                <div 
+                  key={student._id} 
+                  className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transform transition-all duration-500 hover:scale-105 border border-slate-200 dark:border-slate-700"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {/* Student Photo */}
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={student.image}
+                      alt={student.name}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => e.currentTarget.src = `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(student.name.charAt(0))}`}
+                    />
+                    {/* Status Badge */}
+                    <div className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-poppins font-medium">
+                      <UserCheck className="h-3 w-3 inline mr-1" />
+                      Active
+                    </div>
+                  </div>
+
+                  {/* Student Info */}
+                  <div className="p-6">
+                    <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-1">
+                      {student.name}
+                    </h3>
+                    <p className="text-purple-600 dark:text-purple-400 font-poppins font-medium mb-3">
+                      "{student.nickname}"
+                    </p>
+                    
+                    {/* Contact Info */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-slate-600 dark:text-slate-300 text-sm">
+                        <Phone className="h-4 w-4 mr-2 text-slate-400" />
+                        <span>{student.phoneNumber}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Quote */}
+                    <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
+                      <div className="flex items-start">
+                        <Quote className="h-4 w-4 text-purple-400 mr-2 mt-0.5 flex-shrink-0" />
+                        <p className="text-slate-600 dark:text-slate-300 text-sm font-poppins italic">
+                          "{student.quote}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
       </main>
+
+      {/* Reference Number Verification Modal */}
+      {showRefModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-2">
+                Verify Your Reference Number
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 font-poppins">
+                Enter your reference number to update your class information
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Reference Number
+                </label>
+                <input
+                  type="text"
+                  value={refNumber}
+                  onChange={(e) => setRefNumber(e.target.value)}
+                  placeholder="Enter your reference number"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                />
+              </div>
+
+              {refError && (
+                <div className="flex items-center text-red-600 dark:text-red-400 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <span>{refError}</span>
+                </div>
+              )}
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowRefModal(false)}
+                  className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-poppins"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={verifyReferenceNumber}
+                  disabled={refVerifying}
+                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-poppins"
+                >
+                  {refVerifying ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Form Modal */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-2">
+                Update Your Class Information
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 font-poppins">
+                Fill in your details to appear on the class page
+              </p>
+            </div>
+
+            <form onSubmit={handleFormSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="Enter your full name"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Nickname *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nickname}
+                    onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+                    placeholder="Enter your nickname"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                    placeholder="Enter your phone number"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Profile Image URL *
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.image}
+                    onChange={(e) => setFormData({...formData, image: e.target.value})}
+                    placeholder="Enter image URL"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Personal Quote *
+                </label>
+                <textarea
+                  value={formData.quote}
+                  onChange={(e) => setFormData({...formData, quote: e.target.value})}
+                  placeholder="Share a quote or something about yourself"
+                  rows={3}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white resize-none"
+                  required
+                />
+              </div>
+
+              {formError && (
+                <div className="flex items-center text-red-600 dark:text-red-400 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowFormModal(false)}
+                  className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-poppins"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-poppins"
+                >
+                  {formSubmitting ? 'Updating...' : 'Update Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
