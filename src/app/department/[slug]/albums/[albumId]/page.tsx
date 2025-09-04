@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, UserCheck, AlertCircle, ImageIcon, Plus, Heart, MessageCircle, Calendar, Building2, Moon, User } from 'lucide-react';
+import { ArrowLeft, Upload, UserCheck, AlertCircle, ImageIcon, Plus, Heart, MessageCircle, Calendar, Building2, Moon, User, X } from 'lucide-react';
 import { getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
 import ImageViewer from '@/components/ImageViewer';
+import ImageUpload from '@/components/ImageUpload';
+import { uploadMultipleToCloudinary, CloudinaryUploadResult } from '@/utils/cloudinary';
 
 interface Department {
   _id: string;
@@ -60,7 +62,7 @@ export default function AlbumDetailPage() {
   
   // Image upload modal
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
+  const [uploadedImages, setUploadedImages] = useState<CloudinaryUploadResult[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -202,9 +204,18 @@ export default function AlbumDetailPage() {
     }
   };
 
-  const uploadImage = async () => {
-    if (!imageUrl.trim()) {
-      setUploadError('Please enter an image URL');
+  const removeImageFromPreview = (index: number) => {
+    const newImages = uploadedImages.filter((_, i) => i !== index);
+    setUploadedImages(newImages);
+  };
+
+  const removeAllImages = () => {
+    setUploadedImages([]);
+  };
+
+  const saveImagesToBackend = async () => {
+    if (uploadedImages.length === 0) {
+      setUploadError('Please upload at least one image');
       return;
     }
 
@@ -217,46 +228,54 @@ export default function AlbumDetailPage() {
       setUploading(true);
       setUploadError(null);
 
-      const requestData = {
-        albumName: album.albumName,
-        albumId: album._id,
-        pictureURL: imageUrl.trim(),
-        uploadedBy: refNumber.trim(),
-        referenceNumber: refNumber.trim(),
-        departmentSlug: departmentSlug
-      };
-      
-      console.log('🔍 Frontend - Sending request data:', requestData);
-      console.log('🔍 Frontend - Album data:', album);
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/upload`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
+      console.log('🔍 Frontend - Saving', uploadedImages.length, 'images to backend');
+
+      // Upload each image to our backend
+      const uploadPromises = uploadedImages.map(async (result: CloudinaryUploadResult) => {
+        const requestData = {
+          albumName: album.albumName,
+          albumId: album._id,
+          pictureURL: result.secure_url,
+          uploadedBy: refNumber.trim(),
+          referenceNumber: refNumber.trim(),
+          departmentSlug: departmentSlug
+        };
+        
+        console.log('🔍 Frontend - Upload request data:', requestData);
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.msg || 'Failed to upload image');
+        }
+
+        return response.json();
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Image uploaded successfully:', result);
-        
-        // Close modals and refresh images
-        setShowUploadModal(false);
-        setRefVerified(false);
-        setRefNumber('');
-        setImageUrl('');
-        
-        // Refresh images
-        await refreshImages();
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.msg || 'Failed to upload image');
-      }
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+      
+      console.log('🔍 Frontend - All uploads successful');
+      
+      // Refresh images after successful upload
+      await refreshImages();
+      
+      // Close modal and reset form
+      setShowUploadModal(false);
+      removeAllImages();
+      setRefNumber('');
+      setRefVerified(false);
       
     } catch (error) {
-      console.error('Error uploading image:', error);
-      setUploadError(error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
+      console.error('Error uploading images:', error);
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload images. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -611,15 +630,69 @@ export default function AlbumDetailPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Image URL
+                  Select Images
                 </label>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="Enter image URL"
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                <ImageUpload
+                  onUpload={(results) => {
+                    setUploadedImages(results);
+                    setUploadError(null);
+                  }}
+                  onError={(error) => setUploadError(error)}
+                  multiple={true}
+                  maxFiles={10}
                 />
+                {uploadedImages.length > 0 && (
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                        {uploadedImages.length} image(s) uploaded successfully
+                      </div>
+                      <button
+                        onClick={removeAllImages}
+                        className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                      >
+                        Remove All
+                      </button>
+                    </div>
+                    
+                    {/* Image Preview Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-slate-200 dark:border-slate-600 rounded-lg p-3 bg-slate-50 dark:bg-slate-800">
+                      {uploadedImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={image.secure_url}
+                            alt={`Uploaded image ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm"
+                          />
+                          
+                          {/* Remove Button */}
+                          <button
+                            onClick={() => removeImageFromPreview(index)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg"
+                            title="Remove image"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                          
+                          {/* Image Info */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            {image.public_id.split('/').pop()?.split('.')[0] || `Image ${index + 1}`}
+                          </div>
+                          
+                          {/* Image Number Badge */}
+                          <div className="absolute top-1 left-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                            {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Preview Instructions */}
+                    <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                      Hover over images to see details. Click the X to remove individual images.
+                    </div>
+                  </div>
+                )}
               </div>
 
               {uploadError && (
@@ -629,24 +702,31 @@ export default function AlbumDetailPage() {
                 </div>
               )}
 
+              {uploading && (
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  Saving images to album...
+                </div>
+              )}
+
               <div className="flex space-x-3">
                 <button
                   onClick={() => {
                     setShowUploadModal(false);
                     setRefVerified(false);
                     setRefNumber('');
-                    setImageUrl('');
+                    removeAllImages();
+                    setUploadError(null);
                   }}
                   className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-poppins"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={uploadImage}
-                  disabled={uploading}
+                  onClick={saveImagesToBackend}
+                  disabled={uploading || uploadedImages.length === 0}
                   className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-poppins"
                 >
-                  {uploading ? 'Uploading...' : 'Upload Photo'}
+                  {uploading ? 'Saving...' : `Save ${uploadedImages.length} Photo${uploadedImages.length !== 1 ? 's' : ''} to Album`}
                 </button>
               </div>
             </div>
