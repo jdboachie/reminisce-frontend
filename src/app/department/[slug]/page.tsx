@@ -62,7 +62,7 @@ export default function DepartmentPage() {
         <div className="flex-grow relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-pink-50/20 to-blue-50/30 dark:from-purple-900/20 dark:via-pink-900/10 dark:to-blue-900/20 animate-watercolor-float"></div>
           <div className="relative z-10 flex items-center justify-center min-h-screen">
-            <div className="text-center">
+        <div className="text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
               <p className="text-lg text-slate-600 dark:text-slate-300 font-poppins">Loading department information...</p>
             </div>
@@ -78,7 +78,7 @@ export default function DepartmentPage() {
         <div className="flex-grow relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-pink-50/20 to-blue-50/30 dark:from-purple-900/20 dark:via-pink-900/10 dark:to-blue-900/20 animate-watercolor-float"></div>
           <div className="relative z-10 flex items-center justify-center min-h-screen">
-            <div className="text-center">
+        <div className="text-center">
               <h2 className="text-3xl font-poppins font-bold text-red-600 mb-4">Error Loading Department</h2>
               <p className="text-red-500 mb-6 font-poppins">{error || 'Department not found'}</p>
               <button 
@@ -106,7 +106,7 @@ export default function DepartmentPage() {
                 <span className="text-white font-bold text-sm">R</span>
               </div>
               <span className="text-white font-bold text-xl font-poppins">REMINISCE</span>
-            </div>
+        </div>
 
             {/* Main Navigation Tabs */}
             <div className="flex space-x-1 bg-slate-700 dark:bg-slate-800 p-1 rounded-lg">
@@ -173,7 +173,7 @@ export default function DepartmentPage() {
               </button>
               <button className="p-2 text-slate-300 hover:text-white transition-colors">
                 <User className="h-5 w-5" />
-              </button>
+            </button>
             </div>
           </div>
         </div>

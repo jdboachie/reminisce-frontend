@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, FolderOpen, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, FolderOpen, Image as ImageIcon, Eye } from 'lucide-react';
 import { Button, Modal, FormField } from './ui';
 import { Album, CreateAlbumPayload } from '../types';
 import { API_CONFIG, authenticatedApiCall } from '@/config/api';
 import { useNotification } from '../hooks/useNotification';
+import AdminAlbumDetail from './AdminAlbumDetail';
 
 interface AlbumsManagementProps {
   adminToken?: string;
@@ -23,17 +24,18 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   
   const [albumForm, setAlbumForm] = useState<CreateAlbumPayload>({
     albumName: ''
   });
-
+  
   useEffect(() => {
     if (adminToken) {
       loadAlbums();
     }
   }, [adminToken]);
-
+  
   const loadAlbums = async () => {
     try {
       setLoading(true);
@@ -133,8 +135,8 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
         
         // Reset form and close modal
         resetAlbumForm();
-        setModalOpen(false);
-        
+      setModalOpen(false);
+      
         // Refresh albums list to show the new album
         await loadAlbums();
       } else {
@@ -179,6 +181,14 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
     }
   };
 
+  const handleViewAlbum = (albumId: string) => {
+    setSelectedAlbumId(albumId);
+  };
+
+  const handleBackToAlbums = () => {
+    setSelectedAlbumId(null);
+  };
+
   const formatDate = (date: Date | string) => {
     try {
       return new Date(date).toLocaleDateString('en-US', {
@@ -196,6 +206,17 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       <div className="text-center py-8">
         <p className="text-gray-500">Please log in to manage albums.</p>
       </div>
+    );
+  }
+
+  // Show album detail view if an album is selected
+  if (selectedAlbumId) {
+    return (
+      <AdminAlbumDetail
+        albumId={selectedAlbumId}
+        adminToken={adminToken}
+        onBack={handleBackToAlbums}
+      />
     );
   }
   
@@ -381,8 +402,10 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                   {/* Quick Action Button */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <button
-                      className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-700 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200"
+                      onClick={() => handleViewAlbum(album._id)}
+                      className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-700 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2"
                     >
+                      <Eye className="h-4 w-4" />
                       View Album
                     </button>
                 </div>

@@ -31,6 +31,7 @@ export const API_CONFIG = {
     // Album management
     CREATE_ALBUM: '/album/createalbum',
     GET_ALBUMS: '/album/getalbums',
+    GET_ALBUM_BY_ID: '/album',
     DELETE_ALBUM: '/album/deletealbum',
     
     // Image/Photo management
