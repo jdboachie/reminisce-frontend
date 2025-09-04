@@ -29,7 +29,6 @@ export interface CreateEventPayload {
   description: string;
   venue: string;
   eventDate: string;
-  departmentId: string;
 }
 
 export interface UpdateEventPayload {
@@ -38,7 +37,6 @@ export interface UpdateEventPayload {
   venue?: string;
   eventDate?: string;
   status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  departmentId?: string;
 }
 
 export interface Album {
@@ -53,7 +51,6 @@ export interface Album {
 
 export interface CreateAlbumPayload {
   albumName: string;
-  departmentId: string;
 }
 
 export interface DepartmentInfo {
@@ -89,7 +86,6 @@ export interface Student {
 export interface CreateStudentPayload {
   referenceNumber: string;
   workspace: string;
-  departmentId: string;
 }
 
 export interface UpdateStudentPayload {
@@ -140,6 +136,35 @@ export interface CreateReportPayload {
 export interface CreateDepartmentPayload {
   name: string;
   code: string;
+}
+
+export interface DepartmentInfo {
+  id: string;
+  code: string;
+  name: string;
+  slug: string;
+}
+
+export interface SignupResponse {
+  msg: string;
+  token: string;
+  tokenType: string;
+  username: string;
+  departmentId: string;
+  departmentCode: string;
+  departmentSlug: string;
+  departmentName: string;
+  department: DepartmentInfo;
+}
+
+export interface SigninResponse {
+  token: string;
+  tokenType: string;
+  user: {
+    username: string;
+    departmentId: string;
+  };
+  department: DepartmentInfo;
 }
 
 export interface UploadStudentListResponse {

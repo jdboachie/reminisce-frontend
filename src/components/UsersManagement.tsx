@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Users, Trash2, Upload, Search } from 'lucide-react';
 import { studentAPI } from '../utils';
 import { Student, CreateStudentPayload, UpdateStudentPayload } from '../types';
+import { authenticatedApiCall, API_CONFIG } from '../config/api';
 
 interface UsersManagementProps {
   adminToken?: string;
@@ -29,7 +30,6 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
     workspace: departmentInfo?.name || ''
   });
   const [uploadData, setUploadData] = useState({
-    workspace: '',
     referenceNumbers: ''
   });
   const [submitting, setSubmitting] = useState(false);
@@ -54,22 +54,47 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
     if (departmentInfo?.name) {
       console.log('🔍 UsersManagement: Setting workspace to department:', departmentInfo.name);
       setFormData(prev => ({ ...prev, workspace: departmentInfo.name }));
-      setUploadData(prev => ({ ...prev, workspace: departmentInfo.name }));
     }
   }, [departmentInfo]);
 
   const loadStudents = async () => {
     try {
       setLoading(true);
-      // Only load students from the current workspace
-      const currentWorkspace = departmentInfo?.name || '';
-      if (currentWorkspace) {
-        const data = await studentAPI.getStudentsByWorkspace(currentWorkspace);
-        setStudents(data);
+      console.log('🔍 UsersManagement - Starting to load students...');
+      
+      // Use authenticated API call to get students for the admin's department
+      const adminToken = localStorage.getItem('adminToken');
+      console.log('🔍 UsersManagement - Admin token exists:', !!adminToken);
+      
+      if (adminToken) {
+        const endpoint = API_CONFIG.ENDPOINTS.GET_STUDENTS_BY_WORKSPACE;
+        console.log('🔍 UsersManagement - Calling endpoint:', endpoint);
+        
+        const response = await authenticatedApiCall(
+          endpoint,
+          adminToken,
+          { method: 'GET' }
+        );
+        
+        console.log('🔍 UsersManagement - Response status:', response.status);
+        console.log('🔍 UsersManagement - Response ok:', response.ok);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('🔍 UsersManagement - Students data received:', data);
+          console.log('🔍 UsersManagement - Students count:', data.length);
+          setStudents(data);
+        } else {
+          const errorText = await response.text();
+          console.error('🔍 UsersManagement - Error response:', errorText);
+          throw new Error(`Failed to load students: ${response.statusText}`);
+        }
       } else {
+        console.log('🔍 UsersManagement - No admin token, setting empty students');
         setStudents([]);
       }
     } catch (err) {
+      console.error('🔍 UsersManagement - Error loading students:', err);
       setError(err instanceof Error ? err.message : 'Failed to load students');
     } finally {
       setLoading(false);
@@ -93,8 +118,10 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         setEditingStudent(null);
       } else {
         // Create new student
-        const newStudent = await studentAPI.createStudent(formData, adminToken);
-        setStudents(prev => [newStudent, ...prev]);
+        await studentAPI.createStudent(formData, adminToken);
+        
+        // Refresh students list to show the new student
+        await loadStudents();
       }
       
       // Reset form
@@ -125,7 +152,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         .map(ref => ref.trim())
         .filter(ref => ref.length > 0);
       
-      const result = await studentAPI.uploadStudentList(uploadData.workspace, referenceNumbers, adminToken);
+      const result = await studentAPI.uploadStudentList(referenceNumbers, adminToken);
       
       // Refresh students list
       await loadStudents();
@@ -144,7 +171,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
       });
       
       // Reset form
-      setUploadData({ workspace: '', referenceNumbers: '' });
+      setUploadData({ referenceNumbers: '' });
       setShowUploadForm(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload student list');
@@ -167,7 +194,10 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
 
     try {
       await studentAPI.deleteStudent(student.referenceNumber, adminToken);
-      setStudents(prev => prev.filter(s => s._id !== student._id));
+      
+      // Refresh students list to ensure UI is updated
+      await loadStudents();
+      
       alert('Student deleted successfully!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete student');
@@ -320,18 +350,10 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Student List</h3>
           <form onSubmit={handleUpload} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Workspace
-              </label>
-              <input
-                type="text"
-                value={uploadData.workspace}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                disabled
-                title="Automatically set to current department"
-              />
-              <p className="text-xs text-gray-500 mt-1">Automatically set to: {departmentInfo?.name || 'Current Department'}</p>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> Students will be automatically assigned to <span className="font-semibold">{departmentInfo?.name || 'Current Department'}</span> based on your admin account.
+              </p>
             </div>
             
             <div>
@@ -370,7 +392,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
                 type="button"
                 onClick={() => {
                   setShowUploadForm(false);
-                  setUploadData({ workspace: '', referenceNumbers: '' });
+                  setUploadData({ referenceNumbers: '' });
                   setError(null);
                 }}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"

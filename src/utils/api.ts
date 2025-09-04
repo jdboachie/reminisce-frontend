@@ -8,6 +8,8 @@ import {
   CreateStudentPayload, 
   UpdateStudentPayload,
   CreateImagePayload,
+  SignupResponse,
+  SigninResponse,
   CreateReportPayload,
   CreateAlbumPayload,
   CreateEventPayload,
@@ -167,9 +169,9 @@ export const studentAPI = {
     }
   },
 
-  async uploadStudentList(workspace: string, referenceNumbers: string[], token: string): Promise<UploadStudentListResponse> {
+  async uploadStudentList(referenceNumbers: string[], token: string): Promise<UploadStudentListResponse> {
     const response = await authenticatedApiCall(
-      `${API_CONFIG.ENDPOINTS.UPLOAD_STUDENT_LIST}/${workspace}`,
+      API_CONFIG.ENDPOINTS.UPLOAD_STUDENT_LIST,
       token,
       {
         method: 'POST',
@@ -430,7 +432,7 @@ export const reportAPI = {
 
 // Authentication API functions
 export const authAPI = {
-  async signup(username: string, password: string, departmentName?: string, departmentCode?: string): Promise<{ msg: string; username: string; departmentSlug: string; departmentName: string }> {
+  async signup(username: string, password: string, departmentName?: string, departmentCode?: string): Promise<SignupResponse> {
     console.log('Attempting signup with:', { username, password, departmentName, departmentCode });
     
     const payload: any = { username, password };
@@ -465,7 +467,7 @@ export const authAPI = {
     return result;
   },
 
-  async signin(username: string, password: string): Promise<{ token: string; user: any }> {
+  async signin(username: string, password: string): Promise<SigninResponse> {
     console.log('Attempting signin with:', { username, password });
     
     const response = await fetch(getApiEndpoint('SIGNIN'), {

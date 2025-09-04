@@ -29,33 +29,20 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
   const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [refreshingAfterCreation, setRefreshingAfterCreation] = useState(false);
   
   const [eventForm, setEventForm] = useState<CreateEventPayload>({
     title: '',
     description: '',
     venue: '',
-    eventDate: '',
-    departmentId: 
+    eventDate: ''
   });
 
-  // Load events when component mounts or department changes
+  // Load events when component mounts or admin token changes
   useEffect(() => {
-    if (adminToken && departmentInfo?.name) {
-      loadEvents(true);
+    if (adminToken) {
+      loadEvents();
     }
-  }, [adminToken, departmentInfo?.name]);
-
-  // Retry loading events if initial load fails
-  useEffect(() => {
-    if (adminToken && departmentInfo?.name && events.length === 0 && !loading && !error) {
-      // Small delay to ensure department info is fully loaded
-      const timer = setTimeout(() => {
-        loadEvents(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [adminToken, departmentInfo?.name, events.length, loading, error]);
+  }, [adminToken]);
 
   // Update department in eventForm when departmentInfo changes
   useEffect(() => {
@@ -64,35 +51,50 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
     }
   }, [departmentInfo]);
 
-  const loadEvents = async (showLoading = true) => {
+  const loadEvents = async () => {
     try {
-      if (showLoading) {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
       
       if (!adminToken) {
         throw new Error('Admin token not available');
       }
       
-      if (departmentInfo?.name) {
-        // Load events specific to the current department
-        const data = await eventAPI.getEventsByDepartment(departmentInfo.name, adminToken);
-        setEvents(data);
-        console.log(`Loaded ${data.length} events for department: ${departmentInfo.name}`);
+      // Use workspace-based endpoint (no department name needed)
+      const endpoint = API_CONFIG.ENDPOINTS.GET_EVENTS;
+      console.log('🔍 EventsManagement - Loading events for admin department');
+      
+      const response = await authenticatedApiCall(
+        endpoint,
+        adminToken,
+        { method: 'GET' }
+      );
+
+      console.log('🔍 EventsManagement - Response status:', response.status);
+      console.log('🔍 EventsManagement - Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 EventsManagement - Error response:', errorText);
+        throw new Error(`Failed to load events: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('🔍 EventsManagement - Events data received:', result);
+      
+      if (result.success && result.data) {
+        // Backend returns events in result.data.events
+        const eventsData = result.data.events || result.data;
+        setEvents(eventsData);
+        console.log(`🔍 EventsManagement - Loaded ${eventsData.length} events`);
       } else {
-        // Fallback: load all events
-        const data = await eventAPI.getAllEvents(adminToken);
-        setEvents(data);
-        console.log(`Loaded ${data.length} events (no department filter)`);
+        throw new Error('Invalid response format from server');
       }
     } catch (err) {
-      console.error('Error loading events:', err);
+      console.error('🔍 EventsManagement - Error loading events:', err);
       setError(err instanceof Error ? err.message : 'Failed to load events');
     } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
@@ -105,8 +107,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       title: '',
       description: '',
       venue: '',
-      eventDate: '',
-      departmentId: object
+      eventDate: ''
     });
   };
 
@@ -172,21 +173,8 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       resetEventForm();
       setModalOpen(false);
       
-      // Add a delay before refreshing events to ensure backend has processed the data
-      setLoading(true);
-      setRefreshingAfterCreation(true);
-      showNotification('Refreshing events list...', 'success');
-      setTimeout(async () => {
-        try {
-          await loadEvents(false); // Don't show loading spinner since we're already showing it
-        } catch (error) {
-          console.error('Error refreshing events after creation:', error);
-          showNotification('Failed to refresh events list', 'error');
-        } finally {
-          setLoading(false);
-          setRefreshingAfterCreation(false);
-        }
-      }, 2000); // Wait 2 seconds before refreshing
+      // Refresh events list to show the new event
+      await loadEvents();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create event';
       setError(errorMessage);
@@ -235,8 +223,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       title: event.title,
       description: event.description,
       venue: event.venue,
-      eventDate: event.eventDate,
-      departmentId: object
+      eventDate: event.eventDate
     });
     setEditModalOpen(true);
     setDropdownOpen(null);
@@ -339,7 +326,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
           </div>
           <div className="flex gap-3">
             <Button 
-              onClick={() => loadEvents(true)}
+              onClick={() => loadEvents()}
               variant="secondary"
               className="bg-gray-100 hover:bg-gray-200 text-gray-700"
               disabled={loading}
@@ -377,7 +364,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
               <div>
                 <p className="text-sm font-medium text-gray-600">Upcoming</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {events.filter(e => e.status === 'upcoming').length}
+                  {events.filter(e => e.status === 'upcoming' || !e.status).length}
                 </p>
               </div>
               <div className="p-3 bg-emerald-100 rounded-full">
@@ -429,7 +416,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                 </div>
               </div>
               <button
-                onClick={() => loadEvents(true)}
+                onClick={() => loadEvents()}
                 className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-md text-sm font-medium transition-colors"
               >
                 Retry
@@ -443,13 +430,10 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">
-              {refreshingAfterCreation ? 'Refreshing events list...' : 'Loading events...'}
+              Loading events...
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              {refreshingAfterCreation 
-                ? 'Please wait while we refresh the events list with your new event' 
-                : 'Please wait while we fetch the latest events'
-              }
+              Please wait while we fetch the latest events
             </p>
           </div>
         ) : events.length === 0 ? (

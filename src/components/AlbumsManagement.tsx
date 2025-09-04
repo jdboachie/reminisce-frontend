@@ -23,77 +23,59 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [refreshingAfterCreation, setRefreshingAfterCreation] = useState(false);
   
   const [albumForm, setAlbumForm] = useState<CreateAlbumPayload>({
-    albumName: '',
-    departmentId: departmentInfo?.slug || ''
+    albumName: ''
   });
 
-  // Load albums when component mounts or department changes
   useEffect(() => {
-    if (adminToken && departmentInfo?.slug) {
-      loadAlbums(true);
+    if (adminToken) {
+      loadAlbums();
     }
-  }, [adminToken, departmentInfo?.slug]);
+  }, [adminToken]);
 
-  // Only load albums once when component mounts or department changes
-  useEffect(() => {
-    if (adminToken && departmentInfo?.slug) {
-      loadAlbums(true);
-    }
-  }, [adminToken, departmentInfo?.slug]); // Remove albums.length, loading, error from dependencies
-
-  // Update departmentId in albumForm when departmentInfo changes
-  useEffect(() => {
-    if (departmentInfo?.slug) {
-      setAlbumForm(prev => ({ ...prev, departmentId: departmentInfo.slug }));
-    }
-  }, [departmentInfo]);
-  
-    const loadAlbums = async (showLoading = true) => {
+  const loadAlbums = async () => {
     try {
-      if (showLoading) {
       setLoading(true);
-      }
       setError(null);
       
       if (!adminToken) {
         throw new Error('Admin token not available');
       }
       
-      if (departmentInfo?.slug) {
-        const endpoint = `${API_CONFIG.ENDPOINTS.GET_ALBUMS}/${departmentInfo.slug}`;
-        console.log('Loading albums for department:', departmentInfo.slug);
-        
-        const response = await authenticatedApiCall(
-          endpoint,
-          adminToken,
-          { method: 'GET' }
-        );
+      // Use workspace-based endpoint (no department slug needed)
+      const endpoint = API_CONFIG.ENDPOINTS.GET_ALBUMS;
+      console.log('🔍 AlbumsManagement - Loading albums for admin department');
+      
+      const response = await authenticatedApiCall(
+        endpoint,
+        adminToken,
+        { method: 'GET' }
+      );
 
-        if (!response.ok) {
-          throw new Error(`Failed to load albums: ${response.statusText}`);
-        }
+      console.log('🔍 AlbumsManagement - Response status:', response.status);
+      console.log('🔍 AlbumsManagement - Response ok:', response.ok);
 
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-          setAlbums(result.data);
-          console.log(`Loaded ${result.data.length} albums`);
-        } else {
-          throw new Error('Invalid response format from server');
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 AlbumsManagement - Error response:', errorText);
+        throw new Error(`Failed to load albums: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('🔍 AlbumsManagement - Albums data received:', result);
+      
+      if (result.success && result.data) {
+        setAlbums(result.data);
+        console.log(`🔍 AlbumsManagement - Loaded ${result.data.length} albums`);
       } else {
-        setAlbums([]);
+        throw new Error('Invalid response format from server');
       }
     } catch (err) {
-      console.error('Error loading albums:', err);
+      console.error('🔍 AlbumsManagement - Error loading albums:', err);
       setError(err instanceof Error ? err.message : 'Failed to load albums');
     } finally {
-      if (showLoading) {
       setLoading(false);
-      }
     }
   };
 
@@ -103,8 +85,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
 
   const resetAlbumForm = () => {
     setAlbumForm({
-      albumName: '',
-      departmentId: departmentInfo?.slug || ''
+      albumName: ''
     });
   };
 
@@ -147,28 +128,15 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       console.log('Album creation result:', result);
       
       if (result.success) {
-        // Show success message first
+        // Show success message
         showNotification('Album created successfully!', 'success');
         
         // Reset form and close modal
         resetAlbumForm();
-      setModalOpen(false);
-      
-        // Add a delay before refreshing albums to ensure backend has processed the data
-        setLoading(true);
-        setRefreshingAfterCreation(true);
-        showNotification('Refreshing albums list...', 'success');
-        setTimeout(async () => {
-          try {
-            await loadAlbums(false); // Don't show loading spinner since we're already showing it
-          } catch (error) {
-            console.error('Error refreshing albums after creation:', error);
-            showNotification('Failed to refresh albums list', 'error');
-          } finally {
-            setLoading(false);
-            setRefreshingAfterCreation(false);
-          }
-        }, 2000); // Wait 2 seconds before refreshing
+        setModalOpen(false);
+        
+        // Refresh albums list to show the new album
+        await loadAlbums();
       } else {
         throw new Error(result.msg || 'Failed to create album');
       }
@@ -197,8 +165,10 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
 
       const result = await response.json();
       if (result.success) {
-      setAlbums(prev => prev.filter(album => album._id !== albumId));
         showNotification('Album deleted successfully!', 'success');
+        
+        // Refresh albums list to ensure UI is updated
+        await loadAlbums();
       } else {
         throw new Error(result.msg || 'Failed to delete album');
       }
@@ -263,7 +233,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
           </div>
           <div className="flex gap-3">
             <Button 
-              onClick={() => loadAlbums(true)}
+              onClick={() => loadAlbums()}
               variant="secondary"
               className="bg-gray-100 hover:bg-gray-200 text-gray-700"
               disabled={loading}
@@ -327,7 +297,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                 </div>
               </div>
               <button
-                onClick={() => loadAlbums(true)}
+                onClick={() => loadAlbums()}
                 className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-md text-sm font-medium transition-colors"
               >
                 Retry
@@ -341,13 +311,10 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">
-              {refreshingAfterCreation ? 'Refreshing albums list...' : 'Loading albums...'}
+              Loading albums...
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              {refreshingAfterCreation 
-                ? 'Please wait while we refresh the albums list with your new album' 
-                : 'Please wait while we fetch the latest albums'
-              }
+              Please wait while we fetch the latest albums
             </p>
           </div>
         ) : albums.length === 0 ? (
@@ -457,14 +424,6 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
             required
           />
           
-          <FormField
-            label="Department"
-            value={albumForm.departmentId}
-            onChange={(value) => updateAlbumForm('departmentId', value)}
-            placeholder="Department slug (auto-filled)"
-            required
-            readOnly
-          />
           
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
             <p className="text-sm text-blue-700">

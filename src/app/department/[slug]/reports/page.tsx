@@ -96,24 +96,64 @@ export default function DepartmentReportsRoute() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    
-    // Reset form after showing success message
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        category: '',
-        subject: '',
-        message: '',
-        department: department?.name || ''
+    try {
+      // Get reference number from user (students need to enter their reference number)
+      const referenceNumber = prompt('Please enter your reference number to submit this report:');
+      
+      if (!referenceNumber) {
+        alert('Reference number is required to submit a report.');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Prepare report data
+      const reportData = {
+        title: formData.subject,
+        content: formData.message,
+        referenceNumber: referenceNumber.trim(),
+        departmentSlug: departmentSlug
+      };
+      
+      console.log('Submitting report:', reportData);
+      
+      // Submit report to backend
+      const response = await fetch(`${API_CONFIG.BASE_URL}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData)
       });
-    }, 3000);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.msg || `Failed to submit report: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Report submitted successfully:', result);
+      
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      
+      // Reset form after showing success message
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          category: '',
+          subject: '',
+          message: '',
+          department: department?.name || ''
+        });
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert(`Failed to submit report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { User, Lock, AlertCircle, ArrowRight, UserPlus, LogIn, Building } from 'lucide-react';
 import { authAPI, departmentAPI } from '../utils';
-import { CreateDepartmentPayload } from '../types';
+import { CreateDepartmentPayload, SignupResponse, SigninResponse } from '../types';
 
 interface AdminAuthProps {
   onSuccess: (token: string) => void;
@@ -50,46 +50,36 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess, onBack }) => {
         }
 
         // Signup with department info
-        const signupResult = await authAPI.signup(username, password, departmentName, departmentCode);
+        const signupResult: SignupResponse = await authAPI.signup(username, password, departmentName, departmentCode);
         setSuccess('Admin account and department created successfully!');
         
         // Store department info for the admin panel
-        localStorage.setItem('departmentInfo', JSON.stringify({
-          slug: signupResult.departmentSlug,
-          name: signupResult.departmentName,
-          code: signupResult.departmentCode,
-          id: signupResult.departmentId
-        }));
+        const departmentInfo = {
+          slug: signupResult.department.slug,
+          name: signupResult.department.name,
+          code: signupResult.department.code,
+          id: signupResult.department.id
+        };
+        
+        localStorage.setItem('departmentInfo', JSON.stringify(departmentInfo));
         
         // Use token directly from signup response
         const token = signupResult.token;
-        
-        // Store department info from signup response (in case it has additional data)
-        if (signupResult.department) {
-          localStorage.setItem('departmentInfo', JSON.stringify({
-            slug: signupResult.department.slug,
-            name: signupResult.department.name,
-            code: signupResult.department.code,
-            id: signupResult.department.id
-          }));
-        }
         
         // Store token and redirect to admin panel
         localStorage.setItem('adminToken', token);
         onSuccess(token);
       } else {
         // Signin
-        const data = await authAPI.signin(username, password);
+        const data: SigninResponse = await authAPI.signin(username, password);
         
         // Store department info from signin response
-        if (data.department) {
-          localStorage.setItem('departmentInfo', JSON.stringify({
-            slug: data.department.slug,
-            name: data.department.name,
-            code: data.department.code,
-            id: data.department.id
-          }));
-        }
+        localStorage.setItem('departmentInfo', JSON.stringify({
+          slug: data.department.slug,
+          name: data.department.name,
+          code: data.department.code,
+          id: data.department.id
+        }));
         
         localStorage.setItem('adminToken', data.token);
         onSuccess(data.token);

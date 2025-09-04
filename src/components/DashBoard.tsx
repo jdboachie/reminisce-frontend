@@ -67,7 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
         
         // Get albums count
         const albumsResponse = await authenticatedApiCall(
-          `${API_CONFIG.ENDPOINTS.GET_ALBUMS}/${departmentSlug}`,
+          API_CONFIG.ENDPOINTS.GET_ALBUMS,
           adminToken,
           { method: 'GET' }
         );
@@ -76,10 +76,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
         let totalUsers = 0;
         if (studentsResponse.ok) {
           const studentsData = await studentsResponse.json();
-          // Students API returns array directly
-          totalUsers = studentsData.filter((student: any) => 
-            student.workspace === departmentSlug
-          ).length;
+          // Students API returns array directly - backend already filters by department
+          totalUsers = studentsData.length;
         }
 
         // Process events count
@@ -87,9 +85,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
         if (eventsResponse.ok) {
           const eventsResult = await eventsResponse.json();
           if (eventsResult.success && eventsResult.data && eventsResult.data.events) {
-            // Filter active events (ongoing + upcoming) by department
+            // Filter active events (ongoing + upcoming) - backend already filters by department
             activeEvents = eventsResult.data.events.filter((event: any) => 
-              event.department === departmentSlug && 
               ['ongoing', 'upcoming'].includes(event.status)
             ).length;
           }

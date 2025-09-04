@@ -20,7 +20,7 @@ export const API_CONFIG = {
     GET_STUDENTS_BY_WORKSPACE: '/student', // Get students by workspace
     UPDATE_STUDENT: '/student', // Update student data
     DELETE_STUDENT: '/student', // Delete student record
-    UPLOAD_STUDENT_LIST: '/student', // Upload list of student reference numbers
+    UPLOAD_STUDENT_LIST: '/student/upload', // Upload list of student reference numbers
     
     // Department management
     CREATE_DEPARTMENT: '/department',
