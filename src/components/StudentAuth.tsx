@@ -23,7 +23,7 @@ const StudentAuth: React.FC<StudentAuthProps> = ({ onAuthenticated, onBack }) =>
 
             try {
                  // Call your backend API - check if student exists
-       const response = await fetch(`http://localhost:3000/student/${studentId}`, {
+       const response = await fetch(`https://reminisce-backend.onrender.com/student/${studentId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

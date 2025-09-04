@@ -2,7 +2,7 @@
 export const API_CONFIG = {
   // Set this to your actual backend URL
   BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reminisce-backend.onrender.com',
-  // BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000',
+  // BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reminisce-backend.onrender.com',
   
   // Set this to true to use your real backend, false to use mock APIs
   USE_REAL_BACKEND: true, // Use your real backend

@@ -78,7 +78,7 @@ npm run dev
 yarn dev
 ```
 
-2. Open [http://localhost:3000](http://localhost:3000) in your browser
+2. Open [https://reminisce-backend.onrender.com](https://reminisce-backend.onrender.com) in your browser
 
 3. Build for production:
 ```bash

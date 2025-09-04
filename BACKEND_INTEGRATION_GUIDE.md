@@ -23,7 +23,7 @@ Edit `.env.local` and set your backend URL:
 
 ```env
 # Your backend URL (update this with your actual backend URL)
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=https://reminisce-backend.onrender.com
 
 # Set to true to use your real backend
 NEXT_PUBLIC_USE_REAL_BACKEND=true
@@ -176,13 +176,13 @@ First, test your backend endpoints in Postman:
 
 ```bash
 # Test authentication
-POST http://localhost:3000/student
+POST https://reminisce-backend.onrender.com/student
 {
   "studentId": "2024001"
 }
 
 # Test profile upload
-POST http://localhost:3000/api/profiles/upload
+POST https://reminisce-backend.onrender.com/api/profiles/upload
 {
   "studentId": "2024001",
   "name": "John Doe",
@@ -208,13 +208,13 @@ Open browser DevTools → Network tab to see:
 ## 🚨 Common Issues & Solutions
 
 ### Issue 1: CORS Errors
-**Error:** `Access to fetch at 'http://localhost:3000' from origin 'http://localhost:3000' has been blocked by CORS policy`
+**Error:** `Access to fetch at 'https://reminisce-backend.onrender.com' from origin 'https://reminisce-backend.onrender.com' has been blocked by CORS policy`
 
 **Solution:** Configure CORS in your backend:
 ```javascript
 // Express.js example
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://reminisce-backend.onrender.com',
   credentials: true
 }));
 ```
@@ -254,7 +254,7 @@ NEXT_PUBLIC_USE_REAL_BACKEND=false
 ### Use Real Backend (Production)
 ```env
 NEXT_PUBLIC_USE_REAL_BACKEND=true
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=https://reminisce-backend.onrender.com
 ```
 
 ## 📊 API Response Format Requirements

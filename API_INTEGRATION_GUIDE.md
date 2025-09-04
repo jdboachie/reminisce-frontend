@@ -34,7 +34,7 @@ The application now has a complete frontend-backend integration where:
 
 ### Step 2: Set Environment Variables
 1. Create a new environment in Postman
-2. Add variable: `baseUrl` = `http://localhost:3000`
+2. Add variable: `baseUrl` = `https://reminisce-backend.onrender.com`
 3. Select this environment for your requests
 
 ### Step 3: Test Authentication

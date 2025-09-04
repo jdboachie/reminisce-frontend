@@ -91,7 +91,7 @@ export default function AlbumDetailPage() {
       setDepartment(departmentInfo);
 
       // Fetch album details
-      const albumResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/album/${albumId}`);
+      const albumResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://reminisce-backend.onrender.com'}/album/${albumId}`);
       if (albumResponse.ok) {
         const albumResult = await albumResponse.json();
         if (albumResult.success && albumResult.data) {
@@ -101,7 +101,7 @@ export default function AlbumDetailPage() {
           
           // Fetch images for this album after album is loaded
           console.log('🔍 Frontend - Fetching images for album ID:', albumData._id);
-          const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/getimages/${albumData._id}`);
+          const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://reminisce-backend.onrender.com'}/image/public/getimages/${albumData._id}`);
           if (imagesResponse.ok) {
             const imagesResult = await imagesResponse.json();
             if (imagesResult.success && imagesResult.data) {
@@ -141,7 +141,7 @@ export default function AlbumDetailPage() {
     if (!album?._id) return;
     
     try {
-      const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/getimages/${album._id}`);
+      const imagesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://reminisce-backend.onrender.com'}/image/public/getimages/${album._id}`);
       if (imagesResponse.ok) {
         const imagesResult = await imagesResponse.json();
         if (imagesResult.success && imagesResult.data) {
@@ -244,7 +244,7 @@ export default function AlbumDetailPage() {
         
         console.log('🔍 Frontend - Upload request data:', requestData);
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/image/public/upload`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://reminisce-backend.onrender.com'}/image/public/upload`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

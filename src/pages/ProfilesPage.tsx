@@ -50,7 +50,7 @@ const ProfilesPage: React.FC = () => {
              const fetchStudents = async () => {
            try {
              // Call your backend API to get all students
-             const response = await fetch('http://localhost:3000/student');
+             const response = await fetch('https://reminisce-backend.onrender.com/student');
              const data = await response.json();
 
                            if (response.ok) {
@@ -108,7 +108,7 @@ const ProfilesPage: React.FC = () => {
     const fetchStudents = async () => {
       try {
                  console.log('Refreshing students list...');
-         const response = await fetch('http://localhost:3000/student');
+         const response = await fetch('https://reminisce-backend.onrender.com/student');
         const data = await response.json();
         
         console.log('Refresh response:', data);

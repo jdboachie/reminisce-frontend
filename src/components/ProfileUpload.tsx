@@ -92,7 +92,7 @@ const ProfileUpload: React.FC<ProfileUploadProps> = ({ studentId, onBack, onComp
        console.log('=== END REQUEST DEBUG ===');
        
        // Call your backend API to upload profile
-       const response = await fetch('http://localhost:3000/student', {
+       const response = await fetch('https://reminisce-backend.onrender.com/student', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
