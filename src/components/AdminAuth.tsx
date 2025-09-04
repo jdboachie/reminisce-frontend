@@ -55,13 +55,15 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess, onBack }) => {
         
         // Store department info for the admin panel
         const departmentInfo = {
-          slug: signupResult.department.slug,
+          _id: signupResult.department.id,
           name: signupResult.department.name,
           code: signupResult.department.code,
-          id: signupResult.department.id
+          slug: signupResult.department.slug,
+          workspace: signupResult.department.id // Use department ID as workspace
         };
         
-        localStorage.setItem('departmentInfo', JSON.stringify(departmentInfo));
+        console.log('🔍 AdminAuth: Storing admin department info (signup):', departmentInfo);
+        localStorage.setItem('adminDepartmentInfo', JSON.stringify(departmentInfo));
         
         // Use token directly from signup response
         const token = signupResult.token;
@@ -73,13 +75,16 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess, onBack }) => {
         // Signin
         const data: SigninResponse = await authAPI.signin(username, password);
         
-        // Store department info from signin response
-        localStorage.setItem('departmentInfo', JSON.stringify({
-          slug: data.department.slug,
+        // Store admin department info separately from client department info
+        const adminDeptInfo = {
+          _id: data.department.id,
           name: data.department.name,
           code: data.department.code,
-          id: data.department.id
-        }));
+          slug: data.department.slug,
+          workspace: data.department.id // Use department ID as workspace
+        };
+        console.log('🔍 AdminAuth: Storing admin department info:', adminDeptInfo);
+        localStorage.setItem('adminDepartmentInfo', JSON.stringify(adminDeptInfo));
         
         localStorage.setItem('adminToken', data.token);
         onSuccess(data.token);

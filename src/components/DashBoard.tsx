@@ -4,6 +4,7 @@ import { Users, Calendar, ImageIcon, Eye, UserPlus } from 'lucide-react';
 import { StatCard } from './ui';
 import { API_CONFIG, authenticatedApiCall } from '@/config/api';
 import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
+import { Share2, Copy, Check } from 'lucide-react';
 
 interface DashboardProps {
   departmentSlug: string;
@@ -27,6 +28,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -147,6 +149,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
     }
   }, [departmentSlug, adminToken]);
 
+  const copyToClipboard = async () => {
+    const departmentUrl = `${window.location.origin}/department/${departmentSlug}`;
+    try {
+      await navigator.clipboard.writeText(departmentUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -198,6 +211,48 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
           {stats.map((stat, index) => (
             <StatCard key={index} {...stat} />
           ))}
+        </div>
+      </div>
+
+      {/* Shareable Link Section */}
+      <div className="bg-white rounded-2xl soft-shadow p-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+            <Share2 className="h-4 w-4 text-purple-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800">Share Department Link</h3>
+        </div>
+        
+        <p className="text-sm text-slate-600 mb-4">
+          Share this link with your students to give them direct access to the department home page.
+        </p>
+        
+        <div className="flex items-center space-x-3">
+          <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-3">
+            <code className="text-sm text-slate-700 font-mono break-all">
+              {typeof window !== 'undefined' ? `${window.location.origin}/department/${departmentSlug}` : ''}
+            </code>
+          </div>
+          <button
+            onClick={copyToClipboard}
+            className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            {copied ? (
+              <>
+                <Check className="h-4 w-4" />
+                <span className="text-sm">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4" />
+                <span className="text-sm">Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+        
+        <div className="mt-3 text-xs text-slate-500">
+          💡 Students can use this link to directly access the department home page and start exploring their digital yearbook.
         </div>
       </div>
 

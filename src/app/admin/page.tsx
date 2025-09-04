@@ -27,7 +27,7 @@ import { useNotification } from '../../hooks/useNotification';
 import { useAppState } from '../../hooks/useAppState';
 
 // Types
-import { Tab } from '../../types';
+import { Tab, DepartmentInfo } from '../../types';
 import { Header } from '@/components/ui/Header';
 
 const AdminPanel: React.FC = () => {
@@ -37,10 +37,11 @@ const AdminPanel: React.FC = () => {
     setActiveTab, 
     users, 
     events, 
-    albums, 
-    departmentInfo,
-    setDepartmentInfo 
+    albums
   } = useAppState();
+  
+  // Use local state for admin department info (separate from client department info)
+  const [departmentInfo, setDepartmentInfo] = useState<DepartmentInfo | null>(null);
 
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,15 +52,19 @@ const AdminPanel: React.FC = () => {
       setAdminToken(token);
       setIsAuthenticated(true);
       
-      // Load department info from localStorage
-      const storedDepartmentInfo = localStorage.getItem('departmentInfo');
-      if (storedDepartmentInfo) {
+      // Load admin department info from localStorage (separate from client department info)
+      const storedAdminDepartmentInfo = localStorage.getItem('adminDepartmentInfo');
+      console.log('🔍 Admin: Loading department info from localStorage:', storedAdminDepartmentInfo);
+      if (storedAdminDepartmentInfo) {
         try {
-          const deptInfo = JSON.parse(storedDepartmentInfo);
+          const deptInfo = JSON.parse(storedAdminDepartmentInfo);
+          console.log('🔍 Admin: Parsed department info:', deptInfo);
           setDepartmentInfo(deptInfo);
         } catch (err) {
-          console.error('Error parsing department info:', err);
+          console.error('Error parsing admin department info:', err);
         }
+      } else {
+        console.log('🔍 Admin: No admin department info found in localStorage');
       }
     }
   }, [setDepartmentInfo]);
@@ -67,10 +72,26 @@ const AdminPanel: React.FC = () => {
   const handleLoginSuccess = (token: string) => {
     setAdminToken(token);
     setIsAuthenticated(true);
+    
+    // Load admin department info from localStorage after successful login
+    const storedAdminDepartmentInfo = localStorage.getItem('adminDepartmentInfo');
+    console.log('🔍 Admin: Loading department info after login:', storedAdminDepartmentInfo);
+    if (storedAdminDepartmentInfo) {
+      try {
+        const deptInfo = JSON.parse(storedAdminDepartmentInfo);
+        console.log('🔍 Admin: Parsed department info after login:', deptInfo);
+        setDepartmentInfo(deptInfo);
+      } catch (err) {
+        console.error('Error parsing admin department info after login:', err);
+      }
+    } else {
+      console.log('🔍 Admin: No admin department info found after login');
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminDepartmentInfo'); // Clear admin department info
     setAdminToken(null);
     setIsAuthenticated(false);
   };
@@ -85,15 +106,18 @@ const AdminPanel: React.FC = () => {
   ];
 
   const renderContent = () => {
-    if (!adminToken) return null;
+    console.log('🔍 Admin: Rendering content - adminToken:', !!adminToken, 'departmentInfo:', departmentInfo);
+    if (!adminToken || !departmentInfo) {
+      return <div className="p-6 text-center text-gray-500">Loading department information...</div>;
+    }
     
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard departmentSlug={departmentInfo?.slug || ''} adminToken={adminToken} />;
+        return <Dashboard departmentSlug={departmentInfo.slug} adminToken={adminToken} />;
       case 'users':
         return <UsersManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
-              case 'events':
-          return <EventsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
+      case 'events':
+        return <EventsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       case 'albums':
         return <AlbumsManagement adminToken={adminToken} departmentInfo={departmentInfo} />;
       // case 'department':
@@ -101,7 +125,7 @@ const AdminPanel: React.FC = () => {
       case 'reports':
         return <Reports adminToken={adminToken} departmentInfo={departmentInfo} />;
       default:
-        return <Dashboard departmentSlug={departmentInfo?.slug || ''} adminToken={adminToken} />;
+        return <Dashboard departmentSlug={departmentInfo.slug} adminToken={adminToken} />;
     }
   };
 
@@ -111,10 +135,12 @@ const AdminPanel: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <Header 
-        departmentInfo={departmentInfo}
-        copyToClipboard={copyToClipboard}
-      />
+      {departmentInfo && (
+        <Header 
+          departmentInfo={departmentInfo}
+          copyToClipboard={copyToClipboard}
+        />
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">

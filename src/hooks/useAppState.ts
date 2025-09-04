@@ -122,12 +122,11 @@ const initialPictures: Pictures[] = [
 ];
 
 const initialDepartmentInfo: DepartmentInfo = {
-  name: 'Computer Science Department',
-  description: 'Leading innovation in technology education and research',
-  contactEmail: 'cs@university.edu',
-  contactPhone: '+1 (555) 123-4567',
-  address: 'Building A, University Campus',
-  shareableLink: 'https://workspace.university.edu/cs-dept-2024'
+  _id: '',
+  name: '',
+  code: '',
+  slug: '',
+  workspace: ''
 };
 
 export const useAppState = () => {
