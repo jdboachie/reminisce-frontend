@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Calendar, ArrowLeft, Building2, Moon, User, Filter, Grid, List, MapPin, Users, Clock } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
+import { getDepartmentEvents, getDepartmentInfo } from '@/utils/clientApi';
 
 interface Department {
   _id: string;
@@ -49,21 +50,20 @@ export default function DepartmentEventsRoute() {
       setLoading(true);
       setError(null);
 
-      // Fetch department info
-      const deptResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_DEPARTMENT_BY_SLUG}/${departmentSlug}`);
-      if (!deptResponse.ok) {
-        throw new Error('Department not found');
+      // Get department info from localStorage (set by landing page)
+      const departmentInfo = getDepartmentInfo();
+      if (!departmentInfo) {
+        throw new Error('Department information not found. Please select a department first.');
       }
-      const deptData = await deptResponse.json();
-      setDepartment(deptData);
+      
+      setDepartment(departmentInfo);
 
-      const eventsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_EVENTS}?department=${deptData.slug}`);
+      // Fetch events using the department workspace
+      const eventsResponse = await getDepartmentEvents();
       if (eventsResponse.ok) {
         const eventsResult = await eventsResponse.json();
         if (eventsResult.success && eventsResult.data && eventsResult.data.events) {
-          const departmentEvents = eventsResult.data.events.filter((event: Event) => 
-            event.departmentId === deptData.slug
-          ).map((event: Event) => ({
+          const departmentEvents = eventsResult.data.events.map((event: Event) => ({
             ...event,
             image: event.image || `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(event.title)}`,
             attendees: event.attendees || Math.floor(Math.random() * 500) + 50,

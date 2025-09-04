@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Users, ArrowLeft, Building2, Moon, User, Search, Grid, List, Quote, Mail, MapPin } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
+import { getDepartmentStudents, getDepartmentInfo } from '@/utils/clientApi';
 
 interface Department {
   _id: string;

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Send, CheckCircle, AlertCircle, MessageSquare, Bug, Lightbulb, User, Mail, Moon, ArrowLeft } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
+import { createDepartmentReport, getDepartmentInfo } from '@/utils/clientApi';
 
 interface Department {
   _id: string;
@@ -61,16 +62,16 @@ export default function DepartmentReportsRoute() {
       setLoading(true);
       setError(null);
 
-      // Fetch department info
-      const deptResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_DEPARTMENT_BY_SLUG}/${departmentSlug}`);
-      if (!deptResponse.ok) {
-        throw new Error('Department not found');
+      // Get department info from localStorage (set by landing page)
+      const departmentInfo = getDepartmentInfo();
+      if (!departmentInfo) {
+        throw new Error('Department information not found. Please select a department first.');
       }
-      const deptData = await deptResponse.json();
-      setDepartment(deptData);
+      
+      setDepartment(departmentInfo);
       
       // Set department in form data
-      setFormData(prev => ({ ...prev, department: deptData.name }));
+      setFormData(prev => ({ ...prev, department: departmentInfo.name }));
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load department data');
@@ -116,14 +117,8 @@ export default function DepartmentReportsRoute() {
       
       console.log('Submitting report:', reportData);
       
-      // Submit report to backend
-      const response = await fetch(`${API_CONFIG.BASE_URL}/report`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reportData)
-      });
+      // Submit report to backend using client API
+      const response = await createDepartmentReport(reportData);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

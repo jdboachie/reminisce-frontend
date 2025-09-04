@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ImageIcon, ArrowLeft, Building2, Moon, User, Filter, Search, Plus, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
+import { getDepartmentAlbums, getDepartmentInfo } from '@/utils/clientApi';
 
 interface Department {
   _id: string;
@@ -15,7 +16,7 @@ interface Department {
 
 interface Album {
   _id: string;
-  name: string;
+  albumName: string;
   description?: string;
   imageCount: number;
   departmentId: string;
@@ -39,7 +40,7 @@ export default function DepartmentAlbumsRoute() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const categories = ['All', 'Events', 'Lifestyle', 'Academic', 'Sports', 'Social', 'User Created'];
+  const categories = ['All', 'Events', 'Lifestyle', 'Academic', 'Sports', 'Social', 'Click'];
 
   useEffect(() => {
     if (departmentSlug) {
@@ -52,26 +53,24 @@ export default function DepartmentAlbumsRoute() {
       setLoading(true);
       setError(null);
 
-      // Fetch department info
-      const deptResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_DEPARTMENT_BY_SLUG}/${departmentSlug}`);
-      if (!deptResponse.ok) {
-        throw new Error('Department not found');
+      // Get department info from localStorage (set by landing page)
+      const departmentInfo = getDepartmentInfo();
+      if (!departmentInfo) {
+        throw new Error('Department information not found. Please select a department first.');
       }
-      const deptData = await deptResponse.json();
-      setDepartment(deptData);
+      
+      setDepartment(departmentInfo);
 
-      // Fetch albums for this department only
-      const albumsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_ALBUMS}/${departmentSlug}`);
+      // Fetch albums using the department workspace
+      const albumsResponse = await getDepartmentAlbums();
       if (albumsResponse.ok) {
         const albumsResult = await albumsResponse.json();
         if (albumsResult.success && albumsResult.data) {
-          // Filter albums by department and add mock data for missing fields
-          const departmentAlbums = albumsResult.data.filter((album: Album) => 
-            album.departmentId === deptData.slug
-          ).map((album: Album) => ({
+          // Add mock data for missing fields
+          const departmentAlbums = albumsResult.data.map((album: Album) => ({
             ...album,
-            coverImage: album.coverImage || `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(album.name)}`,
-            category: album.category || 'User Created',
+            coverImage: album.coverImage || `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(album.albumName)}`,
+            category: album.category || 'Click',
             date: album.date || new Date().toLocaleDateString(),
             likes: album.likes || Math.floor(Math.random() * 50),
             comments: album.comments || Math.floor(Math.random() * 20)
@@ -98,7 +97,7 @@ export default function DepartmentAlbumsRoute() {
 
   const filteredAlbums = albums.filter(album => {
     const matchesCategory = selectedCategory === 'All' || album.category === selectedCategory;
-    const matchesSearch = album.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = album.albumName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (album.description && album.description.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
@@ -327,9 +326,9 @@ export default function DepartmentAlbumsRoute() {
                   <div className="relative overflow-hidden">
                     <img
                       src={album.coverImage}
-                      alt={album.name}
+                      alt={album.albumName}
                       className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => e.currentTarget.src = `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(album.name)}`}
+                      onError={(e) => e.currentTarget.src = `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(album.albumName)}`}
                     />
                     {/* Purple Label Strip - EXACT PhotosPage styling */}
                     <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-poppins font-medium">
@@ -344,7 +343,7 @@ export default function DepartmentAlbumsRoute() {
                   {/* Album Info - EXACT PhotosPage styling */}
                   <div className="p-6">
                     <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                      {album.name}
+                      {album.albumName}
                     </h3>
                     {album.description && (
                       <p className="text-slate-600 dark:text-slate-300 text-sm font-poppins mb-4 leading-relaxed">

@@ -118,6 +118,20 @@ const HomePage: React.FC = () => {
       );
       
       if (department) {
+        // Store department information for client-side requests
+        const departmentInfo = {
+          _id: department._id,
+          name: department.name,
+          code: department.code,
+          slug: department.slug,
+          workspace: department._id // Use department ID as workspace
+        };
+        
+        // Store in localStorage for client-side requests
+        localStorage.setItem('departmentInfo', JSON.stringify(departmentInfo));
+        
+        console.log('Department found and stored:', departmentInfo);
+        
         // Redirect to department page
         router.push(`/department/${department.slug}`);
       } else {

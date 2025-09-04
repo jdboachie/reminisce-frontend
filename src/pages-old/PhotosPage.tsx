@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Filter, Search, Plus, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { useAlbums } from '../hooks/useAlbums';
 
-const categories = ['All', 'Events', 'Lifestyle', 'Academic', 'Sports', 'Social', 'User Created'];
+const categories = ['All', 'Events', 'Lifestyle', 'Academic', 'Sports', 'Social', 'Click'];
 
 const PhotosPage: React.FC = () => {
   const { albums, isLoaded, addAlbum } = useAlbums();
