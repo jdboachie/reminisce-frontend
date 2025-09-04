@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Calendar, ArrowLeft, Building2, Moon, User, Filter, Grid, List, MapPin, Users, Clock } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
 import { getDepartmentEvents, getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 interface Department {
   _id: string;
@@ -74,7 +75,7 @@ export default function DepartmentEventsRoute() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load department data');
+      setError(getErrorMessage(err, 'department'));
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Calendar, ImageIcon, Eye, UserPlus } from 'lucide-react';
 import { StatCard } from './ui';
 import { API_CONFIG, authenticatedApiCall } from '@/config/api';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 interface DashboardProps {
   departmentSlug: string;
@@ -133,8 +134,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
         setStatistics(newStats);
         
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch statistics';
-        setError(errorMessage);
+        setError(getErrorMessage(err, 'fetch'));
       } finally {
         setLoading(false);
       }

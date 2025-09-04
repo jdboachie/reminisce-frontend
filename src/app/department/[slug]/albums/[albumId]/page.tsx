@@ -7,6 +7,7 @@ import { getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
 import ImageViewer from '@/components/ImageViewer';
 import ImageUpload from '@/components/ImageUpload';
 import { uploadMultipleToCloudinary, CloudinaryUploadResult } from '@/utils/cloudinary';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 interface Department {
   _id: string;
@@ -122,7 +123,7 @@ export default function AlbumDetailPage() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load album data');
+      setError(getErrorMessage(err, 'fetch'));
     } finally {
       setLoading(false);
     }
@@ -190,15 +191,15 @@ export default function AlbumDetailPage() {
             setRefError('Reference number not found in this department. Please contact your department admin.');
           }
         } else {
-          setRefError('Failed to verify reference number. Please try again.');
+          setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
         }
       } else {
-        setRefError('Failed to verify reference number. Please try again.');
+        setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
       }
       
     } catch (error) {
       console.error('Error verifying reference number:', error);
-      setRefError('Failed to verify reference number. Please try again.');
+      setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
     } finally {
       setRefVerifying(false);
     }
@@ -253,7 +254,7 @@ export default function AlbumDetailPage() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.msg || 'Failed to upload image');
+          throw new Error(ErrorMessages.IMAGE_UPLOAD_ERROR);
         }
 
         return response.json();
@@ -275,7 +276,7 @@ export default function AlbumDetailPage() {
       
     } catch (error) {
       console.error('Error uploading images:', error);
-      setUploadError(error instanceof Error ? error.message : 'Failed to upload images. Please try again.');
+      setUploadError(ErrorMessages.IMAGE_UPLOAD_ERROR);
     } finally {
       setUploading(false);
     }

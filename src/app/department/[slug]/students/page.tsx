@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { User, ArrowLeft, Moon, Plus, Search, Filter, Mail, Phone, Quote, UserCheck, AlertCircle } from 'lucide-react';
 import { getDepartmentStudents, getDepartmentInfo, updateStudentProfile, ensureDepartmentInfo } from '@/utils/clientApi';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 import ImageUpload from '@/components/ImageUpload';
 import { CloudinaryUploadResult } from '@/utils/cloudinary';
 
@@ -104,7 +105,7 @@ export default function DepartmentStudentsRoute() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load department data');
+      setError(getErrorMessage(err, 'department'));
     } finally {
       setLoading(false);
     }
@@ -156,7 +157,7 @@ export default function DepartmentStudentsRoute() {
         }
       }
     } catch (err) {
-      setRefError('Failed to verify reference number. Please try again.');
+      setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
     } finally {
       setRefVerifying(false);
     }
@@ -205,13 +206,13 @@ export default function DepartmentStudentsRoute() {
             quote: ''
           });
         } else {
-          setFormError(result.msg || 'Failed to update profile');
+          setFormError(ErrorMessages.PROFILE_UPDATE_FAILED);
         }
       } else {
-        setFormError('Failed to update profile. Please try again.');
+        setFormError(ErrorMessages.PROFILE_UPDATE_FAILED);
       }
     } catch (err) {
-      setFormError('Failed to update profile. Please try again.');
+      setFormError(ErrorMessages.PROFILE_UPDATE_FAILED);
     } finally {
       setFormSubmitting(false);
     }

@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_CONFIG } from '@/config/api';
 import { saveDepartmentInfo, DepartmentInfo } from '@/utils/clientApi';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 // Helper function to get icon color from gradient
 const getIconColor = (gradient: string) => {
@@ -108,7 +109,7 @@ const HomePage: React.FC = () => {
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LIST_DEPARTMENTS}`);
       
       if (!response.ok) {
-        throw new Error('Failed to search departments');
+        throw new Error(ErrorMessages.FETCH_FAILED);
       }
       
       const departments = await response.json();
@@ -136,10 +137,10 @@ const HomePage: React.FC = () => {
         // Redirect to department page
         router.push(`/department/${department.slug}`);
       } else {
-        setInputError('Department not found. Please check the spelling or contact your administrator.');
+        setInputError('Workspace not found. Please check the spelling or contact your administrator.');
       }
     } catch (err) {
-      setInputError(err instanceof Error ? err.message : 'Failed to find department');
+      setInputError(getErrorMessage(err, 'fetch'));
     } finally {
       setInputLoading(false);
     }
@@ -152,23 +153,23 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-lavender-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section with Subtle Background */}
       <main className="flex-grow relative overflow-hidden">
-        {/* Subtle animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-pink-50/20 to-blue-50/30 dark:from-purple-900/20 dark:via-pink-900/10 dark:to-blue-900/20 animate-watercolor-float"></div>
+        {/* Clean background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-lavender-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"></div>
         
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
           <div className="max-w-4xl mx-auto animate-gentle-fade-in">
             {/* Welcome Illustration */}
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-800 dark:to-pink-800 border-4 border-white/50 dark:border-slate-700/50 flex items-center justify-center mb-8 mx-auto soft-shadow">
+            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-100 to-lavender-100 dark:from-purple-800 dark:to-lavender-800 border-4 border-white/50 dark:border-slate-700/50 flex items-center justify-center mb-8 mx-auto soft-shadow">
               <span className="text-6xl">📖</span>
             </div>
             
             {/* Main Title */}
             <h1 className="text-6xl font-poppins font-bold mb-4 text-slate-800 dark:text-white">
               Welcome to{' '}
-              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-600 via-lavender-600 to-indigo-600 bg-clip-text text-transparent">
                 REMINISCE
               </span>
             </h1>
@@ -179,72 +180,126 @@ const HomePage: React.FC = () => {
             </p>
             
             {/* Subtitle */}
-            <p className="text-lg font-poppins text-slate-500 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg font-poppins text-slate-500 dark:text-slate-400 mb-8 max-w-3xl mx-auto leading-relaxed">
               Step into our digital yearbook where memories come alive. Every photo, every event, 
               every moment captured and preserved for you to cherish forever.
             </p>
 
-            {/* Department Input Toggle - Small Button */}
-            <div className="mb-8">
-              {!showDepartmentInput ? (
-                <button
-                  onClick={toggleDepartmentInput}
-                  className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-sm font-medium border border-slate-200 dark:border-slate-600 backdrop-blur-sm"
-                >
-                  <Building className="h-4 w-4 mr-2" />
-                  Enter Department Name
-                </button>
-              ) : (
-                <div className="max-w-md mx-auto">
-                  <form onSubmit={handleDepartmentSubmit} className="space-y-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="e.g., Computer Science, Accounting..."
-                        value={departmentName}
-                        onChange={(e) => setDepartmentName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-700 dark:text-slate-300"
-                        disabled={inputLoading}
-                      />
-                    </div>
-                    
-                    <div className="flex space-x-3">
-                      <button
-                        type="submit"
-                        disabled={inputLoading || !departmentName.trim()}
-                        className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors font-medium"
-                      >
-                        {inputLoading ? (
-                          <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Finding Department...
-                          </div>
-                        ) : (
-                          'Enter Department'
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={toggleDepartmentInput}
-                        className="px-4 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
+            {/* Call to Action Section */}
+            <div className="mb-12">
+              <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-slate-200/50 dark:border-slate-700/50 shadow-xl">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-lavender-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Building className="h-8 w-8 text-white" />
+                  </div>
                   
-                  {/* Input Error Display */}
-                  {inputError && (
-                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                      <p className="text-red-700 dark:text-red-300 text-sm">{inputError}</p>
+                  <h2 className="text-2xl font-poppins font-semibold text-slate-800 dark:text-white mb-2">
+                    Ready to Get Started?
+                  </h2>
+                  
+                  <p className="text-slate-600 dark:text-slate-300 mb-6 font-poppins">
+                    Enter your Reminisce workspace name below to access your digital yearbook, view memories, and connect with your classmates.
+                  </p>
+
+                  {!showDepartmentInput ? (
+                    <div className="relative">
+                      <button
+                        onClick={toggleDepartmentInput}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-lavender-600 text-white rounded-xl hover:from-purple-700 hover:to-lavender-700 transition-all duration-300 font-poppins font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      >
+                        <Building className="h-5 w-5 mr-3" />
+                        Get Ready and Enter Reminisce Workspace
+                        <ArrowRight className="h-5 w-5 ml-3" />
+                      </button>
+                      {/* Subtle glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-lavender-600 rounded-xl blur-lg opacity-20 -z-10"></div>
+                    </div>
+                  ) : (
+                    <div className="max-w-md mx-auto">
+                      <form onSubmit={handleDepartmentSubmit} className="space-y-6">
+                        <div className="relative">
+                          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder="e.g., Computer Engineering 2024, Computer Science KNUST, Math101..."
+                            value={departmentName}
+                            onChange={(e) => setDepartmentName(e.target.value)}
+                            className="w-full pl-12 pr-4 py-4 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-slate-700 backdrop-blur-sm text-slate-700 dark:text-slate-300 text-lg font-poppins transition-all duration-200"
+                            disabled={inputLoading}
+                            autoFocus
+                          />
+                        </div>
+                        
+                        <div className="flex space-x-3">
+                          <button
+                            type="submit"
+                            disabled={inputLoading || !departmentName.trim()}
+                            className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-lavender-600 text-white rounded-xl hover:from-purple-700 hover:to-lavender-700 disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed transition-all duration-300 font-poppins font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                          >
+                            {inputLoading ? (
+                              <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                                Finding Workspace...
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center">
+                                <Search className="h-5 w-5 mr-2" />
+                                Continue to Workspace
+                              </div>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={toggleDepartmentInput}
+                            className="px-6 py-4 border-2 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 font-poppins font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                      
+                      {/* Input Error Display */}
+                      {inputError && (
+                        <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                          <div className="flex items-center">
+                            <div className="w-5 h-5 text-red-500 mr-2">⚠️</div>
+                            <p className="text-red-700 dark:text-red-300 text-sm font-poppins">{inputError}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Help Section */}
+        <section className="relative z-10 px-4 pb-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="text-center">
+                <h3 className="text-lg font-poppins font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  Not sure what to enter?
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 font-poppins mb-4">
+                  Enter the name of your Reminisce workspace. Common examples include:
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {['Computer Engineering 2024', 'Computer Science KNUST', 'Math101', 'Business Admin 2024', 'Engineering KNUST', 'Medicine 2024', 'Law KNUST', 'Arts 2024'].map((dept) => (
+                    <span key={dept} className="px-3 py-1 bg-white/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-full text-sm font-poppins border border-slate-200 dark:border-slate-600">
+                      {dept}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-4 font-poppins">
+                  If you're unsure, contact your workspace administrator for the exact name.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
         
         {/* Action Cards Section */}
         <section className="relative z-10 px-4 pb-16">

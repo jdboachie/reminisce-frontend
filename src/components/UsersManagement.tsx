@@ -5,6 +5,7 @@ import { Plus, Users, Trash2, Upload, Search } from 'lucide-react';
 import { studentAPI } from '../utils';
 import { Student, CreateStudentPayload, UpdateStudentPayload } from '../types';
 import { authenticatedApiCall, API_CONFIG } from '../config/api';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 interface UsersManagementProps {
   adminToken?: string;
@@ -87,7 +88,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
         } else {
           const errorText = await response.text();
           console.error('🔍 UsersManagement - Error response:', errorText);
-          throw new Error(`Failed to load students: ${response.statusText}`);
+          throw new Error(ErrorMessages.FETCH_FAILED);
         }
       } else {
         console.log('🔍 UsersManagement - No admin token, setting empty students');
@@ -95,7 +96,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
       }
     } catch (err) {
       console.error('🔍 UsersManagement - Error loading students:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load students');
+      setError(getErrorMessage(err, 'fetch'));
     } finally {
       setLoading(false);
     }
@@ -133,7 +134,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
       
       alert(editingStudent ? 'Student updated successfully!' : 'Student created successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save student');
+      setError(getErrorMessage(err, 'save'));
     } finally {
       setSubmitting(false);
     }
@@ -174,7 +175,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
       setUploadData({ referenceNumbers: '' });
       setShowUploadForm(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload student list');
+      setError(getErrorMessage(err, 'upload'));
     } finally {
       setSubmitting(false);
     }
@@ -200,7 +201,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
       
       alert('Student deleted successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete student');
+      setError(getErrorMessage(err, 'delete'));
     }
   };
 
@@ -264,7 +265,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ adminToken, departmen
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by reference number..."
+            placeholder="Search by name, nickname, or phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

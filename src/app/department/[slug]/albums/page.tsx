@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ImageIcon, ArrowLeft, Building2, Moon, User, Filter, Search, Plus, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
 import { getDepartmentAlbums, getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 interface Department {
   _id: string;
@@ -80,7 +81,7 @@ export default function DepartmentAlbumsRoute() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load department data');
+      setError(getErrorMessage(err, 'department'));
     } finally {
       setLoading(false);
     }

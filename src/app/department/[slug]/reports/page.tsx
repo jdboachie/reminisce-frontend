@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Send, CheckCircle, AlertCircle, MessageSquare, Bug, Lightbulb, User, Mail, Moon, ArrowLeft, UserCheck } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
 import { createDepartmentReport, getDepartmentInfo, ensureDepartmentInfo } from '@/utils/clientApi';
+import { ErrorMessages, getErrorMessage } from '@/utils/errorMessages';
 
 interface Department {
   _id: string;
@@ -65,7 +66,7 @@ export default function DepartmentReportsRoute() {
       setDepartment(departmentInfo);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load department data');
+      setError(getErrorMessage(err, 'department'));
     } finally {
       setLoading(false);
     }
@@ -124,15 +125,15 @@ export default function DepartmentReportsRoute() {
             setRefError('Reference number not found in this department. Please contact your department admin.');
           }
         } else {
-          setRefError('Failed to verify reference number. Please try again.');
+          setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
         }
       } else {
-        setRefError('Failed to verify reference number. Please try again.');
+        setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
       }
       
     } catch (error) {
       console.error('Error verifying reference number:', error);
-      setRefError('Failed to verify reference number. Please try again.');
+      setRefError(ErrorMessages.REF_NUMBER_VERIFICATION_FAILED);
     } finally {
       setRefVerifying(false);
     }
@@ -162,7 +163,7 @@ export default function DepartmentReportsRoute() {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.msg || `Failed to submit report: ${response.statusText}`);
+        throw new Error(ErrorMessages.REPORT_SUBMISSION_FAILED);
       }
       
       const result = await response.json();
@@ -183,7 +184,7 @@ export default function DepartmentReportsRoute() {
       
     } catch (error) {
       console.error('Error submitting report:', error);
-      alert(`Failed to submit report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(ErrorMessages.REPORT_SUBMISSION_FAILED);
     } finally {
       setIsSubmitting(false);
     }
