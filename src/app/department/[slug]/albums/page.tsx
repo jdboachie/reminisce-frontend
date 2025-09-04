@@ -18,7 +18,7 @@ interface Album {
   name: string;
   description?: string;
   imageCount: number;
-  department: string;
+  departmentId: string;
   coverImage?: string;
   category?: string;
   date?: string;
@@ -67,7 +67,7 @@ export default function DepartmentAlbumsRoute() {
         if (albumsResult.success && albumsResult.data) {
           // Filter albums by department and add mock data for missing fields
           const departmentAlbums = albumsResult.data.filter((album: Album) => 
-            album.department === deptData.name
+            album.departmentId === deptData.slug
           ).map((album: Album) => ({
             ...album,
             coverImage: album.coverImage || `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(album.name)}`,

@@ -19,7 +19,7 @@ interface Event {
   description: string;
   venue: string;
   eventDate: string;
-  department: string;
+  departmentId: string;
   status: string;
   image?: string;
   attendees?: number;
@@ -57,12 +57,12 @@ export default function DepartmentEventsRoute() {
       const deptData = await deptResponse.json();
       setDepartment(deptData);
 
-      const eventsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_EVENTS}?department=${deptData.name}`);
+      const eventsResponse = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_EVENTS}?department=${deptData.slug}`);
       if (eventsResponse.ok) {
         const eventsResult = await eventsResponse.json();
         if (eventsResult.success && eventsResult.data && eventsResult.data.events) {
           const departmentEvents = eventsResult.data.events.filter((event: Event) => 
-            event.department === deptData.name
+            event.departmentId === deptData.slug
           ).map((event: Event) => ({
             ...event,
             image: event.image || `https://placehold.co/400x300/e2e8f0/64748b?text=${encodeURIComponent(event.title)}`,

@@ -19,7 +19,7 @@ export interface Event {
   eventDate: string;
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   createdBy: string;
-  department: string;
+  departmentId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,7 +29,7 @@ export interface CreateEventPayload {
   description: string;
   venue: string;
   eventDate: string;
-  department: string;
+  departmentId: string;
 }
 
 export interface UpdateEventPayload {
@@ -38,14 +38,22 @@ export interface UpdateEventPayload {
   venue?: string;
   eventDate?: string;
   status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  departmentId?: string;
 }
 
 export interface Album {
   _id: string;
   albumName: string;
   workspaceName: string;
+  departmentId: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateAlbumPayload {
+  albumName: string;
+  departmentId: string;
 }
 
 export interface DepartmentInfo {
@@ -55,12 +63,97 @@ export interface DepartmentInfo {
   slug: string;
   adminId: string;
   createdAt: Date;
+  updatedAt: Date;
   description?: string;
   logo?: string;
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
   shareableLink?: string;
+}
+
+export interface Student {
+  _id: string;
+  name: string;
+  nickname: string;
+  image: string;
+  referenceNumber: string;
+  phoneNumber: string;
+  quote: string;
+  workspace: string;
+  departmentId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateStudentPayload {
+  referenceNumber: string;
+  workspace: string;
+  departmentId: string;
+}
+
+export interface UpdateStudentPayload {
+  name?: string;
+  nickname?: string;
+  image?: string;
+  phoneNumber?: string;
+  quote?: string;
+  workspace?: string;
+  departmentId?: string;
+}
+
+export interface Image {
+  _id: string;
+  albumName: string;
+  pictureURL: string;
+  uploadedBy: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface CreateImagePayload {
+  albumName: string;
+  pictureURL: string;
+  uploadedBy: string;
+}
+
+export interface Report {
+  _id: string;
+  title: string;
+  content: string;
+  departmentId: string;
+  studentName: string;
+  studentEmail: string;
+  referenceNumber: string;
+  resolved: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateReportPayload {
+  title: string;
+  content: string;
+  referenceNumber: string;
+  departmentId: string;
+}
+
+export interface CreateDepartmentPayload {
+  name: string;
+  code: string;
+}
+
+export interface UploadStudentListResponse {
+  msg: string;
+  unaddedReferenceNumbers: string[];
+  alredyAddedReferenceNumbers: string[];
+}
+
+export interface EventStats {
+  total: number;
+  upcoming: number;
+  ongoing: number;
+  completed: number;
+  cancelled: number;
 }
 
 export interface DepartmentStatistics {
@@ -75,38 +168,6 @@ export interface DepartmentStatistics {
     totalAlbums: number;
     totalImages: number;
   };
-}
-
-export interface Student {
-  _id: string;
-  name: string;
-  nickname: string;
-  image: string;
-  referenceNumber: string;
-  phoneNumber: string;
-  quote: string;
-  workspace: string;
-  createdAt: Date;
-}
-
-export interface Image {
-  _id: string;
-  albumName: string;
-  pictureURL: string;
-  uploadedBy: string;
-  isActive: boolean;
-  createdAt: Date;
-}
-
-export interface Report {
-  _id: string;
-  title: string;
-  workspaceName: string;
-  content: string;
-  studentName: string;
-  studentEmail: string;
-  isActive: boolean;
-  createdAt: Date;
 }
 
 export interface Tab {
@@ -163,98 +224,4 @@ export interface CloudinaryUploadResponse {
   format: string;
   width: number;
   height: number;
-}
-
-export interface CreateDepartmentPayload {
-  name: string;
-  code: string;
-}
-
-export interface CreateStudentPayload {
-  referenceNumber: string;
-  workspace: string;
-}
-
-export interface UploadStudentListResponse {
-  msg: string;
-  unaddedReferenceNumbers: string[];
-  alredyAddedReferenceNumbers: string[];
-}
-
-export interface UpdateStudentPayload {
-  name?: string;
-  nickname?: string;
-  image?: string;
-  phoneNumber?: string;
-  quote?: string;
-  workspace?: string;
-}
-
-export interface CreateImagePayload {
-  albumName: string;
-  pictureURL: string;
-  uploadedBy: string;
-}
-
-export interface Report {
-  _id: string;
-  title: string;
-  content: string;
-  workspaceName: string;
-  studentName: string;
-  studentEmail: string;
-  referenceNumber: string;
-  resolved: boolean;
-  createdAt: Date;
-}
-
-export interface CreateReportPayload {
-  title: string;
-  content: string;
-  referenceNumber: string;
-  workspaceName: string;
-}
-
-export interface CreateAlbumPayload {
-  albumName: string;
-  department: string;
-}
-
-export interface CreateEventPayload {
-  title: string;
-  description: string;
-  venue: string;
-  eventDate: string;
-  department: string;
-}
-
-export interface UpdateEventPayload {
-  title?: string;
-  description?: string;
-  venue?: string;
-  eventDate?: string;
-  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  department?: string;
-}
-
-export interface EventStats {
-  total: number;
-  upcoming: number;
-  ongoing: number;
-  completed: number;
-  cancelled: number;
-}
-
-export interface DepartmentStatistics {
-  department: {
-    name: string;
-    code: string;
-    slug: string;
-  };
-  statistics: {
-    totalUsers: number;
-    activeEvents: number;
-    totalAlbums: number;
-    totalImages: number;
-  };
 }

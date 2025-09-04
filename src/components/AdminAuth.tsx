@@ -51,18 +51,28 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess, onBack }) => {
 
         // Signup with department info
         const signupResult = await authAPI.signup(username, password, departmentName, departmentCode);
-        setSuccess('Admin account and department created successfully! Now signing in...');
+        setSuccess('Admin account and department created successfully!');
         
         // Store department info for the admin panel
         localStorage.setItem('departmentInfo', JSON.stringify({
           slug: signupResult.departmentSlug,
           name: signupResult.departmentName,
-          code: departmentCode
+          code: signupResult.departmentCode,
+          id: signupResult.departmentId
         }));
         
-        // Login to get token
-        const loginResult = await authAPI.signin(username, password);
-        const token = loginResult.token;
+        // Use token directly from signup response
+        const token = signupResult.token;
+        
+        // Store department info from signup response (in case it has additional data)
+        if (signupResult.department) {
+          localStorage.setItem('departmentInfo', JSON.stringify({
+            slug: signupResult.department.slug,
+            name: signupResult.department.name,
+            code: signupResult.department.code,
+            id: signupResult.department.id
+          }));
+        }
         
         // Store token and redirect to admin panel
         localStorage.setItem('adminToken', token);
@@ -70,6 +80,17 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess, onBack }) => {
       } else {
         // Signin
         const data = await authAPI.signin(username, password);
+        
+        // Store department info from signin response
+        if (data.department) {
+          localStorage.setItem('departmentInfo', JSON.stringify({
+            slug: data.department.slug,
+            name: data.department.name,
+            code: data.department.code,
+            id: data.department.id
+          }));
+        }
+        
         localStorage.setItem('adminToken', data.token);
         onSuccess(data.token);
       }

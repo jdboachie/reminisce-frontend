@@ -27,7 +27,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
   
   const [albumForm, setAlbumForm] = useState<CreateAlbumPayload>({
     albumName: '',
-    department: departmentInfo?.slug || ''
+    departmentId: departmentInfo?.slug || ''
   });
 
   // Load albums when component mounts or department changes
@@ -44,10 +44,10 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
     }
   }, [adminToken, departmentInfo?.slug]); // Remove albums.length, loading, error from dependencies
 
-  // Update workspace in albumForm when departmentInfo changes
+  // Update departmentId in albumForm when departmentInfo changes
   useEffect(() => {
     if (departmentInfo?.slug) {
-      setAlbumForm(prev => ({ ...prev, workspaceName: departmentInfo.slug }));
+      setAlbumForm(prev => ({ ...prev, departmentId: departmentInfo.slug }));
     }
   }, [departmentInfo]);
   
@@ -104,7 +104,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
   const resetAlbumForm = () => {
     setAlbumForm({
       albumName: '',
-      department: departmentInfo?.slug || ''
+      departmentId: departmentInfo?.slug || ''
     });
   };
 
@@ -117,14 +117,13 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
       setError(null);
       
       // Validate that all required fields are filled
-      if (!albumForm.albumName.trim() || !albumForm.department.trim()) {
+      if (!albumForm.albumName.trim()) {
         throw new Error('Please fill in all required fields');
       }
 
-      // Add department info to the payload
+      // Department will be automatically set from JWT token
       const albumPayload = {
-        albumName: albumForm.albumName,
-        department: departmentInfo?.slug || albumForm.department
+        albumName: albumForm.albumName
       };
       
       console.log('Creating album:', albumPayload);
@@ -459,9 +458,9 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
           />
           
           <FormField
-            label="Workspace (Department)"
-            value={albumForm.department}
-            onChange={(value) => updateAlbumForm('department', value)}
+            label="Department"
+            value={albumForm.departmentId}
+            onChange={(value) => updateAlbumForm('departmentId', value)}
             placeholder="Department slug (auto-filled)"
             required
             readOnly

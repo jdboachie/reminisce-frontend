@@ -36,7 +36,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
     description: '',
     venue: '',
     eventDate: '',
-    department: departmentInfo?.name || 'general'
+    departmentId: 
   });
 
   // Load events when component mounts or department changes
@@ -106,7 +106,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       description: '',
       venue: '',
       eventDate: '',
-      department: departmentInfo?.name || 'general'
+      departmentId: object
     });
   };
 
@@ -130,10 +130,9 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
         throw new Error('Event date must be in the future');
       }
 
-      // Add department to the payload
+      // Department will be automatically set from JWT token
       const eventPayload = {
-        ...eventForm,
-        department: departmentInfo?.name || 'general'
+        ...eventForm
       };
       
       console.log('Sending event payload:', eventPayload);
@@ -237,7 +236,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       description: event.description,
       venue: event.venue,
       eventDate: event.eventDate,
-      department: event.department
+      departmentId: object
     });
     setEditModalOpen(true);
     setDropdownOpen(null);
