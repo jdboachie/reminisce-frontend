@@ -37,6 +37,7 @@ export const API_CONFIG = {
     // Image/Photo management
     UPLOAD_IMAGE: '/image/uploadimage',
     GET_IMAGES: '/image/getimages',
+    GET_IMAGE_COUNT: '/image/count',
     DELETE_IMAGE: '/image/deleteimage',
     
     // Events management

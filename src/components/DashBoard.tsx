@@ -72,6 +72,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
           { method: 'GET' }
         );
 
+        // Get total image count
+        console.log('🔍 Dashboard: Fetching image count...');
+        const imageCountResponse = await authenticatedApiCall(
+          API_CONFIG.ENDPOINTS.GET_IMAGE_COUNT,
+          adminToken,
+          { method: 'GET' }
+        );
+        console.log('🔍 Dashboard: Image count response status:', imageCountResponse.status);
+
         // Process students count
         let totalUsers = 0;
         if (studentsResponse.ok) {
@@ -94,16 +103,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ departmentSlug, adminToken
 
         // Process albums count
         let totalAlbums = 0;
-        let totalImages = 0;
         if (albumsResponse.ok) {
           const albumsResult = await albumsResponse.json();
           if (albumsResult.success && albumsResult.data) {
             totalAlbums = albumsResult.data.length;
-            // Calculate total images from albums
-            totalImages = albumsResult.data.reduce((sum: number, album: any) => 
-              sum + (album.imageCount || 0), 0
-            );
           }
+        }
+
+        // Process image count
+        let totalImages = 0;
+        if (imageCountResponse.ok) {
+          const imageCountResult = await imageCountResponse.json();
+          console.log('🔍 Dashboard: Image count result:', imageCountResult);
+          if (imageCountResult.success && imageCountResult.data) {
+            totalImages = imageCountResult.data.totalImages;
+            console.log('🔍 Dashboard: Total images found:', totalImages);
+          }
+        } else {
+          console.error('🔍 Dashboard: Failed to fetch image count:', imageCountResponse.status);
         }
 
         const newStats = {
