@@ -104,7 +104,7 @@ export const createDepartmentReport = async (reportData: {
   const departmentInfo = getDepartmentInfo();
   if (!departmentInfo) throw new Error('Department information not found');
   
-  return clientApiCall('/report', {
+  return clientApiCall('/report/public', {
     method: 'POST',
     body: JSON.stringify({
       ...reportData,

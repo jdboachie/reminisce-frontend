@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Send, CheckCircle, AlertCircle, MessageSquare, Bug, Lightbulb, User, Mail, Moon, ArrowLeft } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, MessageSquare, Bug, Lightbulb, User, Mail, Moon, ArrowLeft, UserCheck } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
 import { createDepartmentReport, getDepartmentInfo } from '@/utils/clientApi';
 
@@ -15,12 +15,8 @@ interface Department {
 }
 
 interface ReportForm {
-  name: string;
-  email: string;
-  category: string;
-  subject: string;
-  message: string;
-  department: string;
+  title: string;
+  content: string;
 }
 
 export default function DepartmentReportsRoute() {
@@ -34,28 +30,26 @@ export default function DepartmentReportsRoute() {
   const [isDarkMode, setIsDarkMode] = useState(false); // Light theme as default
   
   const [formData, setFormData] = useState<ReportForm>({
-    name: '',
-    email: '',
-    category: '',
-    subject: '',
-    message: '',
-    department: ''
+    title: '',
+    content: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const categories = [
-    { value: 'bug', label: 'Bug Report', icon: Bug, description: 'Report technical issues or problems' },
-    { value: 'suggestion', label: 'Suggestion', icon: Lightbulb, description: 'Share ideas for improvement' },
-    { value: 'feedback', label: 'General Feedback', icon: MessageSquare, description: 'Share your thoughts and comments' },
-    { value: 'other', label: 'Other', icon: AlertCircle, description: 'Anything else you\'d like to share' }
-  ];
+  
+  // Reference number verification - now shown first
+  const [showRefModal, setShowRefModal] = useState(false);
+  const [refNumber, setRefNumber] = useState('');
+  const [refVerifying, setRefVerifying] = useState(false);
+  const [refError, setRefError] = useState<string | null>(null);
+  const [refVerified, setRefVerified] = useState(false);
 
   useEffect(() => {
     if (departmentSlug) {
       fetchDepartmentData();
     }
   }, [departmentSlug]);
+
+  // Remove auto-showing reference modal - user will click button instead
 
   const fetchDepartmentData = async () => {
     try {
@@ -69,9 +63,6 @@ export default function DepartmentReportsRoute() {
       }
       
       setDepartment(departmentInfo);
-      
-      // Set department in form data
-      setFormData(prev => ({ ...prev, department: departmentInfo.name }));
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load department data');
@@ -82,6 +73,12 @@ export default function DepartmentReportsRoute() {
 
   const handleGoHome = () => {
     router.push('/');
+  };
+
+  const startReportProcess = () => {
+    setShowRefModal(true);
+    setRefNumber('');
+    setRefError(null);
   };
 
   const toggleTheme = () => {
@@ -95,23 +92,66 @@ export default function DepartmentReportsRoute() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
+    await submitReport();
+  };
+
+  const verifyReferenceNumber = async () => {
+    if (!refNumber.trim()) {
+      setRefError('Please enter your reference number');
+      return;
+    }
+
     try {
-      // Get reference number from user (students need to enter their reference number)
-      const referenceNumber = prompt('Please enter your reference number to submit this report:');
+      setRefVerifying(true);
+      setRefError(null);
+
+      // Just verify the reference number exists by trying to get student info
+      const { getDepartmentStudents } = await import('@/utils/clientApi');
+      const studentsResponse = await getDepartmentStudents();
       
-      if (!referenceNumber) {
-        alert('Reference number is required to submit a report.');
-        setIsSubmitting(false);
-        return;
+      if (studentsResponse.ok) {
+        const studentsResult = await studentsResponse.json();
+        if (studentsResult.success && studentsResult.data) {
+          const studentExists = studentsResult.data.some((student: any) => 
+            student.referenceNumber === refNumber.trim()
+          );
+
+          if (studentExists) {
+            // Reference number verified, close modal and show form
+            setRefVerified(true);
+            setShowRefModal(false);
+          } else {
+            setRefError('Reference number not found in this department. Please contact your department admin.');
+          }
+        } else {
+          setRefError('Failed to verify reference number. Please try again.');
+        }
+      } else {
+        setRefError('Failed to verify reference number. Please try again.');
       }
       
+    } catch (error) {
+      console.error('Error verifying reference number:', error);
+      setRefError('Failed to verify reference number. Please try again.');
+    } finally {
+      setRefVerifying(false);
+    }
+  };
+
+  const submitReport = async () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      alert('Please fill in all required fields (Title and Message).');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
       // Prepare report data
       const reportData = {
-        title: formData.subject,
-        content: formData.message,
-        referenceNumber: referenceNumber.trim(),
+        title: formData.title,
+        content: formData.content,
+        referenceNumber: refNumber.trim(),
         departmentSlug: departmentSlug
       };
       
@@ -128,25 +168,23 @@ export default function DepartmentReportsRoute() {
       const result = await response.json();
       console.log('Report submitted successfully:', result);
       
-      setIsSubmitting(false);
       setIsSubmitted(true);
       
       // Reset form after showing success message
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({
-          name: '',
-          email: '',
-          category: '',
-          subject: '',
-          message: '',
-          department: department?.name || ''
+          title: '',
+          content: ''
         });
+        setRefVerified(false);
+        setRefNumber('');
       }, 3000);
       
     } catch (error) {
       console.error('Error submitting report:', error);
       alert(`Failed to submit report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -314,124 +352,108 @@ export default function DepartmentReportsRoute() {
                   What can you report?
                 </h3>
                 <div className="space-y-4">
-                  {categories.map((category) => {
-                    const Icon = category.icon;
-                    return (
-                      <div key={category.value} className="flex items-start space-x-3">
-                        <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Icon className="h-4 w-4 text-purple-600 dark:text-purple-500" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-poppins font-semibold text-slate-800 dark:text-white">
-                            {category.label}
-                          </h4>
-                          <p className="text-sm font-poppins text-slate-600 dark:text-slate-300">
-                            {category.description}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Bug className="h-4 w-4 text-purple-600 dark:text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-poppins font-semibold text-slate-800 dark:text-white">
+                        Bug Reports
+                      </h4>
+                      <p className="text-sm font-poppins text-slate-600 dark:text-slate-300">
+                        Report technical issues or problems
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Lightbulb className="h-4 w-4 text-purple-600 dark:text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-poppins font-semibold text-slate-800 dark:text-white">
+                        Suggestions
+                      </h4>
+                      <p className="text-sm font-poppins text-slate-600 dark:text-slate-300">
+                        Share ideas for improvement
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <MessageSquare className="h-4 w-4 text-purple-600 dark:text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-poppins font-semibold text-slate-800 dark:text-white">
+                        General Feedback
+                      </h4>
+                      <p className="text-sm font-poppins text-slate-600 dark:text-slate-300">
+                        Share your thoughts and comments
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Right Column - Feedback Form - EXACT ReportsPage styling */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 soft-shadow border border-slate-200 dark:border-slate-700">
-              {!isSubmitted ? (
+              {!refVerified ? (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <MessageSquare className="h-10 w-10 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h3 className="text-2xl font-poppins font-semibold text-slate-800 dark:text-white mb-4">
+                    Ready to Report an Issue?
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-300 font-poppins mb-8">
+                    Click the button below to start the report process. You'll need to verify your reference number first.
+                  </p>
+                  <button
+                    onClick={startReportProcess}
+                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 font-poppins font-medium shadow-lg hover:shadow-xl flex items-center space-x-2 mx-auto"
+                  >
+                    <MessageSquare className="h-5 w-5" />
+                    <span>Report an Issue</span>
+                  </button>
+                </div>
+              ) : !isSubmitted ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <h3 className="text-2xl font-poppins font-semibold text-slate-800 dark:text-white mb-6">
                     Send us a message
                   </h3>
 
-                  {/* Name Field - EXACT ReportsPage styling */}
+                  {/* Title Field */}
                   <div className="relative">
                     <input
                       type="text"
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
                       className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
                       placeholder=" "
                       required
                     />
                     <label
-                      htmlFor="name"
+                      htmlFor="title"
                       className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
                     >
-                      Your Name
+                      Report Title
                     </label>
                   </div>
 
-                  {/* Email Field - EXACT ReportsPage styling */}
-                  <div className="relative">
-                    <input
-                      type="email"
-                      id="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
-                      placeholder=" "
-                      required
-                    />
-                    <label
-                      htmlFor="email"
-                      className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
-                    >
-                      Email Address
-                    </label>
-                  </div>
-
-                  {/* Category Field - EXACT ReportsPage styling */}
-                  <div className="relative">
-                    <select
-                      id="category"
-                      value={formData.category}
-                      onChange={(e) => handleInputChange('category', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 appearance-none bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
-                      required
-                    >
-                      <option value="">Select a category</option>
-                      {categories.map((category) => (
-                        <option key={category.value} value={category.value}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Subject Field - EXACT ReportsPage styling */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="subject"
-                      value={formData.subject}
-                      onChange={(e) => handleInputChange('subject', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
-                      placeholder=" "
-                      required
-                    />
-                    <label
-                      htmlFor="subject"
-                      className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
-                    >
-                      Subject
-                    </label>
-                  </div>
-
-                  {/* Message Field - EXACT ReportsPage styling */}
+                  {/* Content Field */}
                   <div className="relative">
                     <textarea
-                      id="message"
-                      value={formData.message}
-                      onChange={(e) => handleInputChange('message', e.target.value)}
+                      id="content"
+                      value={formData.content}
+                      onChange={(e) => handleInputChange('content', e.target.value)}
                       rows={5}
                       className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-sm transition-all duration-300 resize-none bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
                       placeholder=" "
                       required
                     />
                     <label
-                      htmlFor="message"
+                      htmlFor="content"
                       className="absolute left-4 top-3 text-slate-500 dark:text-slate-400 font-poppins text-sm transition-all duration-300 pointer-events-none"
                     >
                       Your Message
@@ -497,6 +519,63 @@ export default function DepartmentReportsRoute() {
           </div>
         </div>
       </main>
+
+      {/* Reference Number Verification Modal */}
+      {showRefModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserCheck className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-xl font-poppins font-semibold text-slate-800 dark:text-white mb-2">
+                Verify Your Reference Number
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 font-poppins">
+                Enter your reference number to submit this report
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-poppins font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Reference Number
+                </label>
+                <input
+                  type="text"
+                  value={refNumber}
+                  onChange={(e) => setRefNumber(e.target.value)}
+                  placeholder="Enter your reference number"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-poppins text-slate-800 dark:text-white"
+                />
+              </div>
+
+              {refError && (
+                <div className="flex items-center text-red-600 dark:text-red-400 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <span>{refError}</span>
+                </div>
+              )}
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowRefModal(false)}
+                  className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-poppins"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={verifyReferenceNumber}
+                  disabled={refVerifying}
+                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-poppins"
+                >
+                  {refVerifying ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
