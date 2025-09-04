@@ -114,20 +114,6 @@ const HomePage: React.FC = () => {
       );
       
       if (department) {
-        // Store department information for client-side requests
-        const departmentInfo = {
-          _id: department._id,
-          name: department.name,
-          code: department.code,
-          slug: department.slug,
-          workspace: department._id // Use department ID as workspace
-        };
-        
-        // Store in localStorage for client-side requests
-        localStorage.setItem('departmentInfo', JSON.stringify(departmentInfo));
-        
-        console.log('Department found and stored:', departmentInfo);
-        
         // Redirect to department page
         router.push(`/department/${department.slug}`);
       } else {
@@ -284,11 +270,11 @@ const HomePage: React.FC = () => {
                           {card.description}
                         </p>
                         
-                        {/* Arrow indicator 
+                        {/* Arrow indicator */}
                         <div className="flex items-center justify-center space-x-2 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors duration-300">
                           <span className="text-xs font-poppins font-medium">Explore</span>
                           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                        </div>*/}
+                        </div>
                       </div>
                       
                       {/* Hover glow effect */}
