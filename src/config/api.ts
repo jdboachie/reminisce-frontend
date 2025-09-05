@@ -1,7 +1,9 @@
 // API Configuration
 export const API_CONFIG = {
   // Set this to your actual backend URL
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reminisce-backend.onrender.com',
+  BASE_URL:
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://reminisce-backend.onrender.com",
   // BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reminisce-backend.onrender.com',
 
   // Set this to true to use your real backend, false to use mock APIs
@@ -10,80 +12,79 @@ export const API_CONFIG = {
   // Your real backend endpoints (update these with your actual endpoints)
   ENDPOINTS: {
     // Authentication endpoints
-    SIGNUP: '/signup', // Admin signup endpoint
-    SIGNIN: '/signin', // Admin signin endpoint
-    AUTHENTICATE_STUDENT: '/student', // Your reference number authentication endpoint
+    SIGNUP: "/signup", // Admin signup endpoint
+    SIGNIN: "/signin", // Admin signin endpoint
+    AUTHENTICATE_STUDENT: "/student", // Your reference number authentication endpoint
 
     // Student management
-    CREATE_STUDENT: '/student', // Create student record
-    GET_STUDENTS: '/student', // Get all students
-    GET_STUDENTS_BY_WORKSPACE: '/student', // Get students by workspace
-    UPDATE_STUDENT: '/student', // Update student data
-    DELETE_STUDENT: '/student', // Delete student record
-    UPLOAD_STUDENT_LIST: '/student/upload', // Upload list of student reference numbers
+    CREATE_STUDENT: "/student", // Create student record
+    GET_STUDENTS: "/student", // Get all students
+    GET_STUDENTS_BY_WORKSPACE: "/student", // Get students by workspace
+    UPDATE_STUDENT: "/student", // Update student data
+    DELETE_STUDENT: "/student", // Delete student record
+    UPLOAD_STUDENT_LIST: "/student/upload", // Upload list of student reference numbers
 
     // Department management
-    CREATE_DEPARTMENT: '/department',
-    LIST_DEPARTMENTS: '/department',
-    GET_DEPARTMENT_BY_SLUG: '/department',
-    GET_DEPARTMENT_STATISTICS: '/department',
+    CREATE_DEPARTMENT: "/department",
+    LIST_DEPARTMENTS: "/department",
+    GET_DEPARTMENT_BY_SLUG: "/department",
+    GET_DEPARTMENT_STATISTICS: "/department",
 
     // Album management
-    CREATE_ALBUM: '/album/createalbum',
-    GET_ALBUMS: '/album/getalbums',
-    GET_ALBUM_BY_ID: '/album',
-    DELETE_ALBUM: '/album/deletealbum',
+    CREATE_ALBUM: "/album/createalbum",
+    GET_ALBUMS: "/album/getalbums",
+    GET_ALBUM_BY_ID: "/album",
+    DELETE_ALBUM: "/album/deletealbum",
 
     // Image/Photo management
-    UPLOAD_IMAGE: '/image/uploadimage',
-    GET_IMAGES: '/image/getimages',
-    GET_IMAGE_COUNT: '/image/count',
-    DELETE_IMAGE: '/image/deleteimage',
+    UPLOAD_IMAGE: "/image/uploadimage",
+    GET_IMAGES: "/image/getimages",
+    GET_IMAGE_COUNT: "/image/count",
+    DELETE_IMAGE: "/image/deleteimage",
 
     // Profile upload (student profile picture)
-    UPLOAD_PROFILE: '/student/uploadprofile',
+    UPLOAD_PROFILE: "/student/uploadprofile",
 
     // Events management
-    CREATE_EVENT: '/events',
-    GET_EVENTS: '/events',
-    GET_EVENTS_BY_DEPARTMENT: '/events/department',
-    GET_EVENT_BY_ID: '/events',
-    UPDATE_EVENT: '/events',
-    DELETE_EVENT: '/events',
-    GET_EVENT_STATS: '/events/stats',
+    CREATE_EVENT: "/events",
+    GET_EVENTS: "/events",
+    GET_EVENTS_BY_DEPARTMENT: "/events/department",
+    GET_EVENT_BY_ID: "/events",
+    UPDATE_EVENT: "/events",
+    DELETE_EVENT: "/events",
+    GET_EVENT_STATS: "/events/stats",
 
     // Client-side endpoints
-    GET_DEPARTMENT_CLIENT: '/department',
+    GET_DEPARTMENT_CLIENT: "/department",
 
     // Reports
-    CREATE_REPORT: '/report',
-    GET_REPORTS: '/report',
-    GET_REPORT_BY_ID: '/report',
-    TOGGLE_REPORT_STATUS: '/report',
-    DELETE_REPORT: '/report',
+    CREATE_REPORT: "/report",
+    GET_REPORTS: "/report",
+    GET_REPORT_BY_ID: "/report",
+    TOGGLE_REPORT_STATUS: "/report",
+    DELETE_REPORT: "/report",
   },
 
   // Mock API endpoints (removed since we're using real backend)
   MOCK_ENDPOINTS: {
     // These are no longer needed
-  }
+  },
 };
 
 // Helper function to get the correct endpoint
-export const getApiEndpoint = (endpointKey: keyof typeof API_CONFIG.ENDPOINTS) => {
+export const getApiEndpoint = (
+  endpointKey: keyof typeof API_CONFIG.ENDPOINTS
+) => {
   return `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS[endpointKey]}`;
 };
 
 // Helper function to make API calls
-export const apiCall = async (
-  endpoint: string,
-  options: RequestInit = {}
-) => {
+export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
   const response = await fetch(url, {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     ...options,
@@ -102,8 +103,8 @@ export const authenticatedApiCall = async (
 
   const response = await fetch(url, {
     headers: {
-      'Content-Type': 'application/json',
-      'x-access-token': `${token}`,
+      "Content-Type": "application/json",
+      "x-access-token": `${token}`,
       ...options.headers,
     },
     ...options,

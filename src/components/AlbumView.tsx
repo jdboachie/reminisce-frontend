@@ -39,7 +39,10 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
 
   const generateId = () => Date.now().toString() + Math.random();
 
-  const updatePictureForm = (field: keyof typeof pictureForm, value: string | File | null) => {
+  const updatePictureForm = (
+    field: keyof typeof pictureForm,
+    value: string | File | null
+  ) => {
     setPictureForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -72,7 +75,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
         imageUrl: reader.result as string,
         tags: tags.split(",").map((tag) => tag.trim()),
         uploadedAt: new Date().toLocaleDateString(),
-        uploadedBy: 'You',
+        uploadedBy: "You",
         likes: 0,
         views: 0,
       };
@@ -86,7 +89,9 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
   };
 
   const deletePicture = (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to delete the photo '${title}'?`)) {
+    if (
+      window.confirm(`Are you sure you want to delete the photo '${title}'?`)
+    ) {
       setPictures((prev) => prev.filter((p) => p.id !== id));
       showNotification(`Photo '${title}' deleted successfully.`, "success");
     }
@@ -131,7 +136,10 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
             key={picture.id}
             className="group relative rounded-lg overflow-hidden shadow-md"
           >
-            <div onClick={() => openViewModal(picture)} className="cursor-pointer">
+            <div
+              onClick={() => openViewModal(picture)}
+              className="cursor-pointer"
+            >
               <Image
                 src={picture.imageUrl}
                 alt={picture.title}
@@ -160,19 +168,23 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
       </div>
 
       {/* Add Photo Modal */}
-      <Modal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} title="Add New Photo">
+      <Modal
+        isOpen={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        title="Add New Photo"
+      >
         <div className="space-y-4">
           <FormField
             label="Photo Title"
             value={pictureForm.title}
-            onChange={(value) => updatePictureForm('title', value)}
+            onChange={(value) => updatePictureForm("title", value)}
             placeholder="Enter photo title"
             required
           />
           <FormField
             label="Description"
             value={pictureForm.description}
-            onChange={(value) => updatePictureForm('description', value)}
+            onChange={(value) => updatePictureForm("description", value)}
             placeholder="Photo description (optional)"
             isTextarea
             rows={3}
@@ -180,7 +192,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
           <FormField
             label="Tags (comma separated)"
             value={pictureForm.tags}
-            onChange={(value) => updatePictureForm('tags', value)}
+            onChange={(value) => updatePictureForm("tags", value)}
             placeholder="e.g., event, travel, food"
           />
           <label className="block text-sm font-medium text-reminisce-gray-700">
@@ -188,7 +200,12 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
           </label>
           <input
             type="file"
-            onChange={(e) => updatePictureForm('imageFile', e.target.files ? e.target.files[0] : null)}
+            onChange={(e) =>
+              updatePictureForm(
+                "imageFile",
+                e.target.files ? e.target.files[0] : null
+              )
+            }
             className="block w-full text-sm text-reminisce-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-reminisce-purple-50 file:text-reminisce-purple-700 hover:file:bg-reminisce-purple-100"
             required
           />
@@ -197,14 +214,16 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
           <Button onClick={() => setAddModalOpen(false)} variant="secondary">
             Cancel
           </Button>
-          <Button onClick={addPicture}>
-            Add Photo
-          </Button>
+          <Button onClick={addPicture}>Add Photo</Button>
         </div>
       </Modal>
 
       {/* View Photo Modal */}
-      <Modal isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} title={selectedPicture?.title || ""}>
+      <Modal
+        isOpen={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        title={selectedPicture?.title || ""}
+      >
         {selectedPicture && (
           <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
             <div className="flex-1">

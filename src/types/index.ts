@@ -1,5 +1,5 @@
 // types/index.ts
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon } from "lucide-react";
 
 export interface User {
   id: string;
@@ -7,7 +7,7 @@ export interface User {
   name: string;
   email: string;
   joinedAt: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   avatar?: string;
 }
 
@@ -23,7 +23,7 @@ export interface Event {
   updatedAt?: string;
   // Frontend/mock fields
   id?: string;
-  date?: string;      // mock date
+  date?: string; // mock date
   time?: string;
   location?: string;
   attendees?: number;
@@ -32,7 +32,7 @@ export interface Event {
   // Shared
   title: string;
   description: string;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
 }
 
 export interface CreateEventPayload {
@@ -47,7 +47,7 @@ export interface UpdateEventPayload {
   description?: string;
   venue?: string;
   eventDate?: string;
-  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status?: "upcoming" | "ongoing" | "completed" | "cancelled";
 }
 
 // Album type broadened to support both mock/frontend shape (id, name, etc.) and backend shape (_id, albumName, etc.)
@@ -256,7 +256,14 @@ export interface FormFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  type?: 'text' | 'email' | 'tel' | 'date' | 'time' | 'datetime-local' | 'number';
+  type?:
+    | "text"
+    | "email"
+    | "tel"
+    | "date"
+    | "time"
+    | "datetime-local"
+    | "number";
   placeholder?: string;
   required?: boolean;
   isTextarea?: boolean;
@@ -266,16 +273,16 @@ export interface FormFieldProps {
 
 export interface ButtonProps {
   onClick?: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: "primary" | "secondary" | "danger";
   children: React.ReactNode;
-  type?: 'button' | 'submit';
+  type?: "button" | "submit";
   className?: string;
   disabled?: boolean;
 }
 
 export interface NotificationState {
   message: string;
-  type: 'success' | 'error';
+  type: "success" | "error";
 }
 
 export interface CloudinaryUploadResponse {
