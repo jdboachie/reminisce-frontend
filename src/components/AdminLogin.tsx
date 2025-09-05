@@ -21,7 +21,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => {
     setError('');
 
     try {
-      const data = await authAPI.login(username, password);
+      const data = await authAPI.signin(username, password);
       localStorage.setItem('adminToken', data.token);
       onSuccess(data.token);
     } catch (error) {
@@ -48,7 +48,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => {
               <span className="font-poppins text-sm">Back</span>
             </button>
           )}
-          
+
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">

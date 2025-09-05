@@ -158,7 +158,7 @@ const DepartmentManagement: React.FC<DepartmentManagementProps> = ({ adminToken,
                 <p className="text-sm text-gray-600">Code: {department.code}</p>
                 <p className="text-sm text-gray-500">Slug: {department.slug}</p>
                 <p className="text-xs text-gray-400">
-                  Created: {new Date(department.createdAt).toLocaleDateString()}
+                  Created: {department.createdAt ? new Date(department.createdAt).toLocaleDateString() : '—'}
                 </p>
                 
                 {/* Department Stats */}

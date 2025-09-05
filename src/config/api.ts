@@ -3,17 +3,17 @@ export const API_CONFIG = {
   // Set this to your actual backend URL
   BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reminisce-backend.onrender.com',
   // BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reminisce-backend.onrender.com',
-  
+
   // Set this to true to use your real backend, false to use mock APIs
   USE_REAL_BACKEND: true, // Use your real backend
-  
+
   // Your real backend endpoints (update these with your actual endpoints)
   ENDPOINTS: {
     // Authentication endpoints
     SIGNUP: '/signup', // Admin signup endpoint
     SIGNIN: '/signin', // Admin signin endpoint
     AUTHENTICATE_STUDENT: '/student', // Your reference number authentication endpoint
-    
+
     // Student management
     CREATE_STUDENT: '/student', // Create student record
     GET_STUDENTS: '/student', // Get all students
@@ -21,25 +21,28 @@ export const API_CONFIG = {
     UPDATE_STUDENT: '/student', // Update student data
     DELETE_STUDENT: '/student', // Delete student record
     UPLOAD_STUDENT_LIST: '/student/upload', // Upload list of student reference numbers
-    
+
     // Department management
     CREATE_DEPARTMENT: '/department',
     LIST_DEPARTMENTS: '/department',
     GET_DEPARTMENT_BY_SLUG: '/department',
     GET_DEPARTMENT_STATISTICS: '/department',
-    
+
     // Album management
     CREATE_ALBUM: '/album/createalbum',
     GET_ALBUMS: '/album/getalbums',
     GET_ALBUM_BY_ID: '/album',
     DELETE_ALBUM: '/album/deletealbum',
-    
+
     // Image/Photo management
     UPLOAD_IMAGE: '/image/uploadimage',
     GET_IMAGES: '/image/getimages',
     GET_IMAGE_COUNT: '/image/count',
     DELETE_IMAGE: '/image/deleteimage',
-    
+
+    // Profile upload (student profile picture)
+    UPLOAD_PROFILE: '/student/uploadprofile',
+
     // Events management
     CREATE_EVENT: '/events',
     GET_EVENTS: '/events',
@@ -48,10 +51,10 @@ export const API_CONFIG = {
     UPDATE_EVENT: '/events',
     DELETE_EVENT: '/events',
     GET_EVENT_STATS: '/events/stats',
-    
+
     // Client-side endpoints
     GET_DEPARTMENT_CLIENT: '/department',
-    
+
     // Reports
     CREATE_REPORT: '/report',
     GET_REPORTS: '/report',
@@ -59,7 +62,7 @@ export const API_CONFIG = {
     TOGGLE_REPORT_STATUS: '/report',
     DELETE_REPORT: '/report',
   },
-  
+
   // Mock API endpoints (removed since we're using real backend)
   MOCK_ENDPOINTS: {
     // These are no longer needed
@@ -73,11 +76,11 @@ export const getApiEndpoint = (endpointKey: keyof typeof API_CONFIG.ENDPOINTS) =
 
 // Helper function to make API calls
 export const apiCall = async (
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ) => {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
-    
+
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -85,7 +88,7 @@ export const apiCall = async (
     },
     ...options,
   });
-  
+
   return response;
 };
 
@@ -96,7 +99,7 @@ export const authenticatedApiCall = async (
   options: RequestInit = {}
 ) => {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
-    
+
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -105,6 +108,6 @@ export const authenticatedApiCall = async (
     },
     ...options,
   });
-  
+
   return response;
 };

@@ -1,5 +1,5 @@
-import ReportsPage from '@/pages/ReportsPage'
+import ReportsPage from "@/pageui/ReportsPage";
 
 export default function Reports() {
-  return <ReportsPage />
-} 
+  return <ReportsPage />;
+}

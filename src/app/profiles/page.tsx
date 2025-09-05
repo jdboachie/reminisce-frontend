@@ -1,5 +1,5 @@
-import ProfilesPage from '@/pages/ProfilesPage'
+import ProfilesPage from "@/pageui/ProfilesPage";
 
 export default function Profiles() {
-  return <ProfilesPage />
-} 
+  return <ProfilesPage />;
+}

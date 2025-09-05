@@ -1,5 +1,5 @@
-import AwardsPage from '@/pages/AwardsPage'
+import AwardsPage from "@/pageui/AwardsPage";
 
 export default function Awards() {
-  return <AwardsPage />
-} 
+  return <AwardsPage />;
+}

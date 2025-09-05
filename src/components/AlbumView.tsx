@@ -30,7 +30,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
     imageUrl: "",
   });
 
-  const album = albums.find((a: Album) => a.id === albumId);
+  const album = albums.find((a: Album) => a._id === albumId);
   const albumPictures = pictures.filter((p: Pictures) => p.albumId === albumId);
 
   if (!album) {
@@ -72,6 +72,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId, onBack }) => {
         imageUrl: reader.result as string,
         tags: tags.split(",").map((tag) => tag.trim()),
         uploadedAt: new Date().toLocaleDateString(),
+        uploadedBy: 'You',
         likes: 0,
         views: 0,
       };

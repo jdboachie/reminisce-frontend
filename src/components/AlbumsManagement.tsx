@@ -367,9 +367,11 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {albums.map((album) => (
+            {albums.map((album) => {
+            const albumId = album._id || (album as any).id || '';
+            return (
             <div
-              key={album._id}
+              key={albumId}
                 className="group relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1"
               >
                 {/* Album Cover */}
@@ -428,7 +430,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                   {/* Quick Action Button */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <button
-                      onClick={() => handleViewAlbum(album._id)}
+                      onClick={() => handleViewAlbum(albumId)}
                       className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-700 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
@@ -441,7 +443,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteAlbum(album._id);
+                  handleDeleteAlbum(albumId);
                 }}
                   className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100"
                 aria-label={`Delete album ${album.albumName}`}
@@ -449,7 +451,7 @@ const AlbumsManagement: React.FC<AlbumsManagementProps> = ({ adminToken, departm
                 <Trash2 className="h-5 w-5" />
               </button>
             </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

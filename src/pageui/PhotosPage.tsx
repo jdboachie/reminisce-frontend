@@ -38,7 +38,13 @@ const PhotosPage: React.FC = () => {
   };
 
   // Modal component
-  const Modal = ({ isOpen, onClose, title, children }) => {
+  interface LocalModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+  }
+  const Modal: React.FC<LocalModalProps> = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
@@ -56,7 +62,16 @@ const PhotosPage: React.FC = () => {
   };
 
   // Form field component
-  const FormField = ({ label, value, onChange, placeholder, required = false, isTextarea = false, rows = 1 }) => (
+  interface FormFieldPropsLocal {
+    label: string;
+    value: string;
+    onChange: (val: string) => void;
+    placeholder?: string;
+    required?: boolean;
+    isTextarea?: boolean;
+    rows?: number;
+  }
+  const FormField: React.FC<FormFieldPropsLocal> = ({ label, value, onChange, placeholder, required = false, isTextarea = false, rows = 1 }) => (
     <div>
       <label className="block text-sm font-poppins font-medium text-reminisce-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}

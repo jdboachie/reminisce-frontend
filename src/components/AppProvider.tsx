@@ -19,7 +19,25 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export const useAppStateContext = () => {
   const context = useContext(AppStateContext);
   if (!context) {
-    throw new Error('useAppStateContext must be used within an AppProvider');
+    // Provide a minimal no-op fallback for prerendering/static export
+    return {
+      activeTab: 'dashboard',
+      setActiveTab: () => {},
+      users: [],
+      setUsers: () => {},
+      events: [],
+      setEvents: () => {},
+      albums: [],
+      setAlbums: () => {},
+      pictures: [],
+      setPictures: () => {},
+      departmentInfo: { name: '', code: '', slug: '', workspace: '' },
+      setDepartmentInfo: () => {},
+      isAuthenticated: false,
+      setIsAuthenticated: () => {},
+      currentStudentId: '',
+      setCurrentStudentId: () => {},
+    } as unknown as ReturnType<typeof useAppState>;
   }
   return context;
 };

@@ -17,6 +17,7 @@ interface Student {
   nickname: string;
   quote: string;
   avatar: string;
+  image?: string; // optional fallback image field from backend
 }
 
 const ProfilesPage: React.FC = () => {
@@ -29,21 +30,14 @@ const ProfilesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Use global authentication state (with error handling)
-  let isAuthenticated = false;
-  let setIsAuthenticated = () => {};
-  let currentStudentId = '';
-  let setCurrentStudentId = () => {};
-  
-  try {
-    const appState = useAppStateContext();
-    isAuthenticated = appState.isAuthenticated;
-    setIsAuthenticated = appState.setIsAuthenticated;
-    currentStudentId = appState.currentStudentId;
-    setCurrentStudentId = appState.setCurrentStudentId;
-  } catch (error) {
-    console.log('AppStateContext not available, using defaults');
-  }
+  // Use global authentication state (defensive in case provider missing)
+  const appState = (() => {
+    try { return useAppStateContext(); } catch { return null; }
+  })();
+  const isAuthenticated = appState?.isAuthenticated ?? false;
+  const setIsAuthenticated = appState?.setIsAuthenticated ?? (() => {});
+  const currentStudentId = appState?.currentStudentId ?? '';
+  const setCurrentStudentId = appState?.setCurrentStudentId ?? (() => {});
 
   // Fetch students from backend API (disabled temporarily to avoid auth issues)
   useEffect(() => {

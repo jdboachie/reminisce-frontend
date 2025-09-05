@@ -1,11 +1,11 @@
-import { 
-  authenticatedApiCall, 
-  getApiEndpoint, 
-  API_CONFIG 
+import {
+  authenticatedApiCall,
+  getApiEndpoint,
+  API_CONFIG
 } from '../config/api';
-import { 
-  CreateDepartmentPayload, 
-  CreateStudentPayload, 
+import {
+  CreateDepartmentPayload,
+  CreateStudentPayload,
   UpdateStudentPayload,
   CreateImagePayload,
   SignupResponse,
@@ -46,7 +46,7 @@ export const departmentAPI = {
 
   async listDepartments(): Promise<DepartmentInfo[]> {
     const response = await fetch(getApiEndpoint('LIST_DEPARTMENTS'));
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch departments: ${response.statusText}`);
     }
@@ -56,7 +56,7 @@ export const departmentAPI = {
 
   async getDepartmentBySlug(slug: string): Promise<DepartmentInfo> {
     const response = await fetch(`${getApiEndpoint('GET_DEPARTMENT_BY_SLUG')}/${slug}`);
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch department: ${response.statusText}`);
     }
@@ -67,7 +67,7 @@ export const departmentAPI = {
   async getDepartmentStatistics(slug: string, token: string): Promise<DepartmentStatistics> {
     const endpoint = `${API_CONFIG.ENDPOINTS.GET_DEPARTMENT_STATISTICS}/${slug}/statistics`;
     const fullUrl = `${API_CONFIG.BASE_URL}${endpoint}`;
-    
+
     console.log('🔍 Debugging department statistics API call:');
     console.log('  - API_CONFIG.BASE_URL:', API_CONFIG.BASE_URL);
     console.log('  - API_CONFIG.ENDPOINTS.GET_DEPARTMENT_STATISTICS:', API_CONFIG.ENDPOINTS.GET_DEPARTMENT_STATISTICS);
@@ -77,7 +77,7 @@ export const departmentAPI = {
     console.log('  - Token exists:', !!token);
     console.log('  - Token length:', token?.length);
     console.log('  - Token preview:', token ? `${token.substring(0, 20)}...` : 'None');
-    
+
     const response = await authenticatedApiCall(
       endpoint,
       token,
@@ -123,7 +123,7 @@ export const studentAPI = {
 
   async getAllStudents(): Promise<Student[]> {
     const response = await fetch(getApiEndpoint('GET_STUDENTS'));
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch students: ${response.statusText}`);
     }
@@ -133,7 +133,7 @@ export const studentAPI = {
 
   async getStudentsByWorkspace(workspace: string): Promise<Student[]> {
     const response = await fetch(`${getApiEndpoint('GET_STUDENTS_BY_WORKSPACE')}/${workspace}`);
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch students: ${response.statusText}`);
     }
@@ -208,7 +208,7 @@ export const albumAPI = {
 
   async getAlbums(workspaceName: string): Promise<Album[]> {
     const response = await fetch(`${getApiEndpoint('GET_ALBUMS')}/${workspaceName}`);
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch albums: ${response.statusText}`);
     }
@@ -256,7 +256,7 @@ export const eventAPI = {
       API_CONFIG.ENDPOINTS.GET_EVENTS,
       token
     );
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch events: ${response.statusText}`);
     }
@@ -270,7 +270,7 @@ export const eventAPI = {
       `${API_CONFIG.ENDPOINTS.GET_EVENTS_BY_DEPARTMENT}/${department}`,
       token
     );
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch events by department: ${response.statusText}`);
     }
@@ -284,7 +284,7 @@ export const eventAPI = {
       `${API_CONFIG.ENDPOINTS.GET_EVENT_BY_ID}/${eventId}`,
       token
     );
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch event: ${response.statusText}`);
     }
@@ -329,7 +329,7 @@ export const eventAPI = {
       API_CONFIG.ENDPOINTS.GET_EVENT_STATS,
       token
     );
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch event stats: ${response.statusText}`);
     }
@@ -355,7 +355,7 @@ export const imageAPI = {
 
   async getImages(albumName: string): Promise<Image[]> {
     const response = await fetch(`${getApiEndpoint('GET_IMAGES')}/${albumName}`);
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch images: ${response.statusText}`);
     }
@@ -394,7 +394,7 @@ export const reportAPI = {
       API_CONFIG.ENDPOINTS.GET_REPORTS,
       token
     );
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch reports: ${response.statusText}`);
     }
@@ -407,7 +407,7 @@ export const reportAPI = {
       `${API_CONFIG.ENDPOINTS.GET_REPORT_BY_ID}/${reportId}`,
       token
     );
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch report: ${response.statusText}`);
     }
@@ -417,7 +417,7 @@ export const reportAPI = {
 
   async closeReport(reportId: string, token: string): Promise<void> {
     const response = await authenticatedApiCall(
-      `${API_CONFIG.ENDPOINTS.CLOSE_REPORT}/${reportId}/close`,
+      `${API_CONFIG.ENDPOINTS.TOGGLE_REPORT_STATUS}/${reportId}/close`,
       token,
       {
         method: 'PATCH',
@@ -434,16 +434,16 @@ export const reportAPI = {
 export const authAPI = {
   async signup(username: string, password: string, departmentName?: string, departmentCode?: string): Promise<SignupResponse> {
     console.log('Attempting signup with:', { username, password, departmentName, departmentCode });
-    
+
     const payload: any = { username, password };
     if (departmentName && departmentCode) {
       payload.departmentName = departmentName;
       payload.departmentCode = departmentCode;
     }
-    
+
     console.log('Signup payload:', payload);
     console.log('Signup endpoint:', getApiEndpoint('SIGNUP'));
-    
+
     const response = await fetch(getApiEndpoint('SIGNUP'), {
       method: 'POST',
       headers: {
@@ -469,7 +469,7 @@ export const authAPI = {
 
   async signin(username: string, password: string): Promise<SigninResponse> {
     console.log('Attempting signin with:', { username, password });
-    
+
     const response = await fetch(getApiEndpoint('SIGNIN'), {
       method: 'POST',
       headers: {

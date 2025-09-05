@@ -29,7 +29,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
   const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [eventForm, setEventForm] = useState<CreateEventPayload>({
     title: '',
     description: '',
@@ -55,15 +55,15 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
     try {
       setLoading(true);
       setError(null);
-      
+
       if (!adminToken) {
         throw new Error('Admin token not available');
       }
-      
+
       // Use workspace-based endpoint (no department name needed)
       const endpoint = API_CONFIG.ENDPOINTS.GET_EVENTS;
       console.log('🔍 EventsManagement - Loading events for admin department');
-      
+
       const response = await authenticatedApiCall(
         endpoint,
         adminToken,
@@ -81,7 +81,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
 
       const result = await response.json();
       console.log('🔍 EventsManagement - Events data received:', result);
-      
+
       if (result.success && result.data) {
         // Backend returns events in result.data.events
         const eventsData = result.data.events || result.data;
@@ -118,7 +118,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
     try {
       setSubmitting(true);
       setError(null);
-      
+
       // Validate that all required fields are filled
       if (!eventForm.title.trim() || !eventForm.description.trim() || !eventForm.venue.trim() || !eventForm.eventDate) {
         throw new Error('Please fill in all required fields');
@@ -135,7 +135,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       const eventPayload = {
         ...eventForm
       };
-      
+
       console.log('Sending event payload:', eventPayload);
       console.log('Event form state:', eventForm);
       console.log('Department info:', departmentInfo);
@@ -143,7 +143,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       console.log('API endpoint:', API_CONFIG.ENDPOINTS.CREATE_EVENT);
       console.log('Date type:', typeof eventForm.eventDate);
       console.log('Date value:', eventForm.eventDate);
-      
+
       const newEvent = await authenticatedApiCall(
         API_CONFIG.ENDPOINTS.CREATE_EVENT,
         adminToken,
@@ -165,14 +165,14 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       }
 
       const createdEvent = await newEvent.json();
-      
+
       // Show success message first
       showNotification('Event created successfully!', 'success');
-      
+
       // Reset form and close modal
       resetEventForm();
       setModalOpen(false);
-      
+
       // Refresh events list to show the new event
       await loadEvents();
     } catch (err) {
@@ -191,10 +191,14 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
     try {
       setSubmitting(true);
       setError(null);
-      
-      const updatedEvent = await eventAPI.updateEvent(editingEvent._id, eventForm, adminToken);
-      setEvents(prev => prev.map(e => e._id === editingEvent._id ? updatedEvent : e));
-      
+
+      const targetId = editingEvent._id || (editingEvent as any).id;
+      if (!targetId) {
+        throw new Error('Cannot update event: missing event identifier');
+      }
+      const updatedEvent = await eventAPI.updateEvent(targetId, eventForm, adminToken);
+      setEvents(prev => prev.map(e => (e._id || (e as any).id) === targetId ? updatedEvent : e));
+
       resetEventForm();
       setEditModalOpen(false);
       setEditingEvent(null);
@@ -222,8 +226,8 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
     setEventForm({
       title: event.title,
       description: event.description,
-      venue: event.venue,
-      eventDate: event.eventDate
+      venue: event.venue || '',
+      eventDate: event.eventDate || ''
     });
     setEditModalOpen(true);
     setDropdownOpen(null);
@@ -325,7 +329,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             </div>
           </div>
           <div className="flex gap-3">
-            <Button 
+            <Button
               onClick={() => loadEvents()}
               variant="secondary"
               className="bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -336,7 +340,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
               </div>
               <span>Refresh</span>
             </Button>
-            <Button 
+            <Button
               onClick={() => setModalOpen(true)}
               className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
@@ -443,7 +447,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No events yet</h3>
             <p className="text-gray-600 mb-6">Get started by creating your first event</p>
-            <Button 
+            <Button
               onClick={() => setModalOpen(true)}
               className="bg-gradient-to-r from-indigo-500 to-purple-600"
             >
@@ -457,7 +461,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
               <div key={event._id} className="group bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1">
                 {/* Status Header */}
                 <div className={`h-1 bg-gradient-to-r ${getEventStatusColor(event.status)}`}></div>
-                
+
                 <div className="p-6">
                   {/* Header with Title and Menu */}
                   <div className="flex justify-between items-start mb-4">
@@ -467,26 +471,26 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                       </h3>
                     </div>
                     <div className="relative ml-4">
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleDropdown(event._id);
+                          toggleDropdown(event._id || (event as any).id);
                         }}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                       >
                         <MoreVertical className="h-4 w-4 text-gray-400" />
                       </button>
-                      
+
                       {dropdownOpen === event._id && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-10">
-                          <button 
+                          <button
                             onClick={() => viewEventDetails(event)}
                             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Eye className="h-4 w-4 mr-3 text-gray-400" />
                             View Details
                           </button>
-                          <button 
+                          <button
                             onClick={() => openEditModal(event)}
                             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
@@ -495,7 +499,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                           </button>
                           <hr className="my-2" />
                           <button
-                            onClick={() => handleDeleteEvent(event._id)}
+                            onClick={() => handleDeleteEvent(event._id || (event as any).id)}
                             className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                           >
                             <Trash2 className="h-4 w-4 mr-3" />
@@ -505,12 +509,12 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Description */}
                   {event.description && (
                     <p className="text-sm text-slate-600 mb-6 line-clamp-2">{event.description}</p>
                   )}
-                  
+
                   {/* Event Details */}
                   <div className="space-y-3 mb-6">
                     <div className="flex items-center text-slate-600">
@@ -518,7 +522,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                         <Calendar className="h-4 w-4 text-indigo-600" />
                       </div>
                       <span className="text-sm font-medium">
-                        {formatEventDate(event.eventDate)} at {formatEventTime(event.eventDate)}
+                        {event.eventDate ? `${formatEventDate(event.eventDate)} at ${formatEventTime(event.eventDate)}` : 'Date not set'}
                       </span>
                     </div>
                     {event.venue && (
@@ -530,7 +534,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Status Badge */}
                   <div className="mb-4">
                     <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border ${getEventStatusBadge(event.status)}`}>
@@ -566,7 +570,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             <h3 className="text-xl font-bold text-gray-900">Create New Event</h3>
             <p className="text-gray-600 text-sm mt-1">Fill in the details to create your event</p>
           </div>
-          
+
           <FormField
             label="Event Title"
             value={eventForm.title}
@@ -574,7 +578,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             placeholder="e.g., Community Meetup, Workshop, Conference"
             required
           />
-          
+
           <FormField
             label="Description"
             value={eventForm.description}
@@ -583,7 +587,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             isTextarea
             rows={4}
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               label="Date & Time"
@@ -600,26 +604,26 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
               required
             />
           </div>
-          
+
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
             <p className="text-sm text-blue-700">
               <strong>Note:</strong> This event will be created for department: <span className="font-semibold">{departmentInfo?.name || 'General'}</span>
             </p>
           </div>
-          
+
           {error && (
             <p className="text-red-600 text-sm">{error}</p>
           )}
-          
+
           <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-100">
-            <Button 
-              onClick={() => setModalOpen(false)} 
+            <Button
+              onClick={() => setModalOpen(false)}
               variant="secondary"
               className="px-6"
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               disabled={submitting}
               type="submit"
               className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 px-6"
@@ -640,7 +644,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             <h3 className="text-xl font-bold text-gray-900">Edit Event</h3>
             <p className="text-gray-600 text-sm mt-1">Update the event details</p>
           </div>
-          
+
           <FormField
             label="Event Title"
             value={eventForm.title}
@@ -648,7 +652,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             placeholder="e.g., Community Meetup, Workshop, Conference"
             required
           />
-          
+
           <FormField
             label="Description"
             value={eventForm.description}
@@ -657,7 +661,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
             isTextarea
             rows={4}
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               label="Date & Time"
@@ -674,21 +678,21 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
               required
             />
           </div>
-          
+
           {error && (
             <p className="text-red-600 text-sm">{error}</p>
           )}
         </form>
-        
+
         <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-100">
-          <Button 
-            onClick={() => setEditModalOpen(false)} 
+          <Button
+            onClick={() => setEditModalOpen(false)}
             variant="secondary"
             className="px-6"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={() => handleUpdateEvent(new Event('submit') as any)}
             disabled={submitting}
             className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6"
@@ -699,9 +703,9 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
       </Modal>
 
       {/* Event Details Modal */}
-      <Modal 
-        isOpen={detailsModalOpen} 
-        onClose={() => setDetailsModalOpen(false)} 
+      <Modal
+        isOpen={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
         title=""
         maxWidth="4xl"
       >
@@ -768,7 +772,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
                   <div className="space-y-2">
-                    <button 
+                    <button
                       onClick={() => {
                         if (selectedEvent) {
                           openEditModal(selectedEvent);
@@ -781,7 +785,7 @@ export const EventsManagement: React.FC<EventsManagementProps> = ({ adminToken, 
                       <Edit3 className="h-4 w-4" />
                       <span>Edit Event</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         if (selectedEvent?._id) {
                           handleDeleteEvent(selectedEvent._id);

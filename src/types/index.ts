@@ -11,17 +11,28 @@ export interface User {
   avatar?: string;
 }
 
+// Event type supports both backend schema and frontend mock fields
 export interface Event {
-  _id: string;
+  // Backend fields
+  _id?: string;
+  venue?: string;
+  eventDate?: string; // backend date field
+  createdBy?: string;
+  departmentId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // Frontend/mock fields
+  id?: string;
+  date?: string;      // mock date
+  time?: string;
+  location?: string;
+  attendees?: number;
+  maxAttendees?: number;
+  imageUrl?: string;
+  // Shared
   title: string;
   description: string;
-  venue: string;
-  eventDate: string;
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  createdBy: string;
-  departmentId: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateEventPayload {
@@ -39,15 +50,37 @@ export interface UpdateEventPayload {
   status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 }
 
+// Album type broadened to support both mock/frontend shape (id, name, etc.) and backend shape (_id, albumName, etc.)
 export interface Album {
-  _id: string;
-  albumName: string;
+  // Backend fields
+  _id?: string;
+  albumName?: string;
+  workspaceName?: string;
+  departmentId?: string;
+  isActive?: boolean;
+  updatedAt?: Date | string;
+  // Frontend/mock fields
+  id?: string;
+  name?: string;
+  description?: string;
+  imageCount?: number;
+  // Shared / optional fields
   coverImage?: string;
-  workspaceName: string;
-  departmentId: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+}
+
+// Pictures (photo) entity used by gallery/album components (mock/local state)
+export interface Pictures {
+  id: string;
+  albumId: string;
+  title: string;
+  description: string;
+  tags: string[];
+  imageUrl: string;
+  uploadedBy: string;
+  uploadedAt: string; // formatted date string
+  likes: number;
+  views: number;
 }
 
 export interface CreateAlbumPayload {
@@ -56,19 +89,24 @@ export interface CreateAlbumPayload {
 }
 
 export interface DepartmentInfo {
-  _id: string;
+  // Backend identifiers
+  _id?: string;
+  id?: string; // lightweight variant id
+  // Core fields
   name: string;
   code: string;
   slug: string;
-  adminId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  // Optional administrative/meta fields
+  adminId?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
   description?: string;
   logo?: string;
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
   shareableLink?: string;
+  workspace?: string;
 }
 
 export interface Student {
@@ -123,6 +161,7 @@ export interface Report {
   studentName: string;
   studentEmail: string;
   referenceNumber: string;
+  workspaceName?: string; // Added to satisfy UI usage
   resolved: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -140,12 +179,7 @@ export interface CreateDepartmentPayload {
   code: string;
 }
 
-export interface DepartmentInfo {
-  id: string;
-  code: string;
-  name: string;
-  slug: string;
-}
+// (Removed duplicate DepartmentInfo declaration; merged into single interface above)
 
 export interface SignupResponse {
   msg: string;
